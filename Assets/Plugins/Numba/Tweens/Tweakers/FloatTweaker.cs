@@ -10,6 +10,6 @@ namespace Numba.Tweens.Tweakers
     public class FloatTweaker : Tweaker<float>
     {
 		public FloatTweaker(float from, float to, Action<float> action) : base(from, to, action) { }
-        public override float Evaluate(float value) => (From + (To - From) * value);
+        public override float Evaluate(float value, Formula formula) => formula.Calculate(From, To, value);
     }
 }

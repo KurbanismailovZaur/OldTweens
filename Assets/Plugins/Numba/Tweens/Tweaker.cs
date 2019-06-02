@@ -9,10 +9,10 @@ namespace Numba.Tweens
 {
 	public abstract class Tweaker
 	{
-		public abstract void Apply(float value);
+		public abstract void Apply(float value, Formula formula);
 	}
 
-    public abstract class Tweaker<T> : Tweaker
+    public abstract class Tweaker<T> : Tweaker where T : struct
     {
         public T From { get; set; }
 
@@ -27,8 +27,8 @@ namespace Numba.Tweens
             Action = action;
         }
 
-        public abstract T Evaluate(float value);
+        public abstract T Evaluate(float value, Formula formula);
 
-        public override void Apply(float value) => Action(Evaluate(value));
+        public override void Apply(float value, Formula formula) => Action(Evaluate(value, formula));
     }
 }
