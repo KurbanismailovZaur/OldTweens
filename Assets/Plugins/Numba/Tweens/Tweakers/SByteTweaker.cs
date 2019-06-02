@@ -9,7 +9,8 @@ namespace Numba.Tweens.Tweakers
 {
     public class SByteTweaker : Tweaker<sbyte>
     {
-		public SByteTweaker(sbyte from, sbyte to, Action<sbyte> action) : base(from, to, action) { }
-        public override sbyte Evaluate(float value, Formula formula) => formula.Calculate(From, To, value);
+        public SByteTweaker(sbyte from, sbyte to, Action<sbyte> action) : base(from, to, action) { }
+
+        public override sbyte Evaluate(float value, Formula formula) => formula?.Calculate(From, To, value) ?? throw new ArgumentNullException("Formula can't be a null");
     }
 }

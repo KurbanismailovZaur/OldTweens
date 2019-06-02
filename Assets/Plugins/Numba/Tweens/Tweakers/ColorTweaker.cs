@@ -9,7 +9,8 @@ namespace Numba.Tweens.Tweakers
 {
     public class ColorTweaker : Tweaker<Color>
     {
-		public ColorTweaker(Color from, Color to, Action<Color> action) : base(from, to, action) { }
-        public override Color Evaluate(float value, Formula formula) => formula.Calculate(From, To, value);
+        public ColorTweaker(Color from, Color to, Action<Color> action) : base(from, to, action) { }
+
+        public override Color Evaluate(float value, Formula formula) => formula?.Calculate(From, To, value) ?? throw new ArgumentNullException("Formula can't be a null");
     }
 }

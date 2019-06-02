@@ -9,7 +9,8 @@ namespace Numba.Tweens.Tweakers
 {
     public class FloatTweaker : Tweaker<float>
     {
-		public FloatTweaker(float from, float to, Action<float> action) : base(from, to, action) { }
-        public override float Evaluate(float value, Formula formula) => formula.Calculate(From, To, value);
+        public FloatTweaker(float from, float to, Action<float> action) : base(from, to, action) { }
+        
+        public override float Evaluate(float value, Formula formula) => formula?.Calculate(From, To, value) ?? throw new ArgumentNullException("Formula can't be a null"); 
     }
 }
