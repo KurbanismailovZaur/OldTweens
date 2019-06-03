@@ -10,6 +10,6 @@ namespace Numba.Tweens.Formulas
 {
     public class CubicInFormula : Formula
     {
-        public override float RemapFormula(float value) => value * value * value;
+        public override float Remap(float value) => value * value * value;
     }
 }

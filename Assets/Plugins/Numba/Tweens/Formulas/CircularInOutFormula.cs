@@ -10,7 +10,7 @@ namespace Numba.Tweens.Formulas
 {
     public class CircularInOutFormula : Formula
     {
-        public override float RemapFormula(float value)
+        public override float Remap(float value)
         {
             if (value < 0.5f)
                 return 0.5f * (1f - Mathf.Sqrt(1f - 4f * (value * value)));

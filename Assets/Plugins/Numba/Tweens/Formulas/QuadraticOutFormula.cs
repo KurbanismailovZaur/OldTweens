@@ -10,6 +10,6 @@ namespace Numba.Tweens.Formulas
 {
     public class QuadraticOutFormula : Formula
     {
-        public override float RemapFormula(float value) => -(value * (value - 2f));
+        public override float Remap(float value) => -(value * (value - 2f));
     }
 }

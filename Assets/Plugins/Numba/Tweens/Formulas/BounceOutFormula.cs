@@ -10,7 +10,7 @@ namespace Numba.Tweens.Formulas
 {
     public class BounceOutFormula : Formula
     {
-        public override float RemapFormula(float value)
+        public override float Remap(float value)
         {
             if (value < 4f / 11f)
                 return (121f * value * value) / 16f;

@@ -10,6 +10,6 @@ namespace Numba.Tweens.Formulas
 {
     public class SineInOutFormula : Formula
     {
-        public override float RemapFormula(float value) => 0.5f * (1f - Mathf.Cos(value * Mathf.PI));
+        public override float Remap(float value) => 0.5f * (1f - Mathf.Cos(value * Mathf.PI));
     }
 }

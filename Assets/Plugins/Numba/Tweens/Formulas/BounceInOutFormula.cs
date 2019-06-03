@@ -10,12 +10,12 @@ namespace Numba.Tweens.Formulas
 {
     public class BounceInOutFormula : Formula
     {
-        public override float RemapFormula(float value)
+        public override float Remap(float value)
         {
             if (value < 0.5f)
-                return 0.5f * BounceIn.RemapFormula(value * 2f);
+                return 0.5f * BounceIn.Remap(value * 2f);
             else
-                return 0.5f * BounceOut.RemapFormula(value * 2f - 1f) + 0.5f;
+                return 0.5f * BounceOut.Remap(value * 2f - 1f) + 0.5f;
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Numba.Tweens.Formulas
 {
     public class QuinticInOutFormula : Formula
     {
-        public override float RemapFormula(float value)
+        public override float Remap(float value)
         {
             if (value < 0.5f)
                 return 16f * value * value * value * value * value;

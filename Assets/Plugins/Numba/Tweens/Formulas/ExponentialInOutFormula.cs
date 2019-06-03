@@ -10,7 +10,7 @@ namespace Numba.Tweens.Formulas
 {
     public class ExponentialInOutFormula : Formula
     {
-        public override float RemapFormula(float value)
+        public override float Remap(float value)
         {
             if (value == 0f || value == 1f) return value;
 

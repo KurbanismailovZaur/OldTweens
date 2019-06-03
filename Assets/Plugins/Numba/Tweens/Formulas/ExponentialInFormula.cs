@@ -10,6 +10,6 @@ namespace Numba.Tweens.Formulas
 {
     public class ExponentialInFormula : Formula
     {
-        public override float RemapFormula(float value) => (value == 0f) ? value : Mathf.Pow(2f, 10f * (value - 1f));
+        public override float Remap(float value) => (value == 0f) ? value : Mathf.Pow(2f, 10f * (value - 1f));
     }
 }

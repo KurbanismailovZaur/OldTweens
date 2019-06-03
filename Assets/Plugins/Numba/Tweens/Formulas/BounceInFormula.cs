@@ -10,6 +10,6 @@ namespace Numba.Tweens.Formulas
 {
     public class BounceInFormula : Formula
     {
-        public override float RemapFormula(float value) => 1f - BounceOut.RemapFormula(1f - value);
+        public override float Remap(float value) => 1f - BounceOut.Remap(1f - value);
     }
 }

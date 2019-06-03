@@ -10,6 +10,6 @@ namespace Numba.Tweens.Formulas
 {
     public class BackInFormula : Formula
     {
-        public override float RemapFormula(float value) => value * value * value - value * Mathf.Sin(value * Mathf.PI);
+        public override float Remap(float value) => value * value * value - value * Mathf.Sin(value * Mathf.PI);
     }
 }

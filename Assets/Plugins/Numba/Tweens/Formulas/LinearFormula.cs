@@ -10,7 +10,7 @@ namespace Numba.Tweens.Formulas
 {
     public class LinearFormula : Formula
     {
-        public override float RemapFormula(float value) => value;
+        public override float Remap(float value) => value;
         
         public new byte Calculate(byte from, byte to, float value) => (byte)(from + (to - from) * value);
 

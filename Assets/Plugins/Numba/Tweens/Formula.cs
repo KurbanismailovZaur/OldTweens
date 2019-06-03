@@ -72,50 +72,50 @@ namespace Numba.Tweens
 
         public static BounceInOutFormula BounceInOut { get; private set; } = new BounceInOutFormula();
 
-        public abstract float RemapFormula(float value);
+        public abstract float Remap(float value);
 
-        public byte Calculate(byte from, byte to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public byte Calculate(byte from, byte to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public sbyte Calculate(sbyte from, sbyte to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public sbyte Calculate(sbyte from, sbyte to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public bool Calculate(bool from, bool to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public bool Calculate(bool from, bool to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public char Calculate(char from, char to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public char Calculate(char from, char to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public short Calculate(short from, short to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public short Calculate(short from, short to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public ushort Calculate(ushort from, ushort to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public ushort Calculate(ushort from, ushort to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public int Calculate(int from, int to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public int Calculate(int from, int to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public uint Calculate(uint from, uint to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public uint Calculate(uint from, uint to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public float Calculate(float from, float to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public float Calculate(float from, float to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public long Calculate(long from, long to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public long Calculate(long from, long to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public ulong Calculate(ulong from, ulong to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public ulong Calculate(ulong from, ulong to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public double Calculate(double from, double to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public double Calculate(double from, double to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public decimal Calculate(decimal from, decimal to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public decimal Calculate(decimal from, decimal to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public Vector2 Calculate(Vector2 from, Vector2 to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public Vector2 Calculate(Vector2 from, Vector2 to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public Vector3 Calculate(Vector3 from, Vector3 to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public Vector3 Calculate(Vector3 from, Vector3 to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public Vector4 Calculate(Vector4 from, Vector4 to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public Vector4 Calculate(Vector4 from, Vector4 to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public Quaternion Calculate(Quaternion from, Quaternion to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public Quaternion Calculate(Quaternion from, Quaternion to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public Rect Calculate(Rect from, Rect to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public Rect Calculate(Rect from, Rect to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public Matrix4x4 Calculate(Matrix4x4 from, Matrix4x4 to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public Matrix4x4 Calculate(Matrix4x4 from, Matrix4x4 to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public Bounds Calculate(Bounds from, Bounds to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public Bounds Calculate(Bounds from, Bounds to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public Color Calculate(Color from, Color to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public Color Calculate(Color from, Color to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
-        public Color32 Calculate(Color32 from, Color32 to, float value) => Linear.Calculate(from, to, RemapFormula(value));
+        public Color32 Calculate(Color32 from, Color32 to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
     }
 }

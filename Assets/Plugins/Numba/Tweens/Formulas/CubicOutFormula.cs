@@ -10,7 +10,7 @@ namespace Numba.Tweens.Formulas
 {
     public class CubicOutFormula : Formula
     {
-        public override float RemapFormula(float value)
+        public override float Remap(float value)
         {
             var f = value - 1f; 
             return f * f * f + 1f;

@@ -10,6 +10,6 @@ namespace Numba.Tweens.Formulas
 {
     public class CircularOutFormula : Formula
     {
-        public override float RemapFormula(float value) => Mathf.Sqrt((2f - value) * value);
+        public override float Remap(float value) => Mathf.Sqrt((2f - value) * value);
     }
 }
