@@ -117,5 +117,7 @@ namespace Numba.Tweens
         public Color Calculate(Color from, Color to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
 
         public Color32 Calculate(Color32 from, Color32 to, float value) => Linear.Calculate(from, to, Remap(Mathf.Clamp01(value)));
+
+        public static implicit operator Formula(Ease ease) => Formula.QuadIn;
     }
 }

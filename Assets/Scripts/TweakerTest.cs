@@ -9,7 +9,7 @@ using Numba.Extensions;
 
 namespace Namespace
 {
-    public class Test : MonoBehaviour
+    public class TweakerTest : MonoBehaviour
     {
         [SerializeField]
         private Transform _target1;
@@ -105,7 +105,7 @@ namespace Namespace
         private Transform _target31;
 
         [SerializeField]
-        [Range(0f, 1f)]
+        [Range(-1f, 2f)]
         private float _value;
 
         private Tweaker _tweaker1;
