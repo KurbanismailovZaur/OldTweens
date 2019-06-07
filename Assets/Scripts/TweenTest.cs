@@ -10,11 +10,6 @@ using Numba.Extensions;
 
 namespace Namespace
 {
-    public abstract class MyClass
-    {
-        protected internal float a;
-    }
-
     public class TweenTest : MonoBehaviour
     {
         [SerializeField]
@@ -28,7 +23,7 @@ namespace Namespace
 
         private IEnumerator Start()
         {
-            var tween = new Tween(new FloatTweaker(0f, 1f, (x) => _cube1.SetPositionX(x)), 1f, Formula.Linear);
+            var tween = new Tween(new FloatTweaker(0f, 1f, (x) => _cube1.SetPositionX(x)), 1f);
             
             var player = tween.PlayRepeated(3);
 

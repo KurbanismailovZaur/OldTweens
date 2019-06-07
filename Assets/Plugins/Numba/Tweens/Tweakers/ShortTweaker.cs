@@ -11,6 +11,6 @@ namespace Numba.Tweens.Tweakers
     {
         public ShortTweaker(short from, short to, Action<short> action) : base(from, to, action) { }
 
-        public override short Evaluate(float value, Formula formula) => formula?.Calculate(From, To, value) ?? throw new ArgumentNullException("Formula can't be a null");
+        public override short Evaluate(float value, Formula formula) => formula?.Calculate(From, To, value) ?? Formula.Linear.Calculate(From, To, value);
     }
 }

@@ -13,9 +13,9 @@ namespace Numba.Tweens
 
         internal protected abstract object ToObject { get; set; }
 
-        internal protected abstract object EvaluateObject(float value, Formula formula);
+        internal protected abstract object EvaluateObject(float value, Formula formula = null);
 
-        public abstract void Apply(float value, Formula formula);
+        public abstract void Apply(float value, Formula formula = null);
     }
 
     public abstract class Tweaker<T> : Tweaker where T : struct
@@ -45,10 +45,10 @@ namespace Numba.Tweens
             Action = action;
         }
 
-        internal protected override object EvaluateObject(float value, Formula formula) => Evaluate(value, formula);
+        internal protected override object EvaluateObject(float value, Formula formula = null) => Evaluate(value, formula);
 
-        public abstract T Evaluate(float value, Formula formula);
+        public abstract T Evaluate(float value, Formula formula = null);
 
-        public override void Apply(float value, Formula formula) => Action?.Invoke(Evaluate(value, formula));
+        public override void Apply(float value, Formula formula = null) => Action?.Invoke(Evaluate(value, formula));
     }
 }

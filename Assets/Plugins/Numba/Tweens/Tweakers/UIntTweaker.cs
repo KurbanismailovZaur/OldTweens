@@ -11,6 +11,6 @@ namespace Numba.Tweens.Tweakers
     {
         public UIntTweaker(uint from, uint to, Action<uint> action) : base(from, to, action) { }
 
-        public override uint Evaluate(float value, Formula formula) => formula?.Calculate(From, To, value) ?? throw new ArgumentNullException("Formula can't be a null");
+        public override uint Evaluate(float value, Formula formula) => formula?.Calculate(From, To, value) ?? Formula.Linear.Calculate(From, To, value);
     }
 }

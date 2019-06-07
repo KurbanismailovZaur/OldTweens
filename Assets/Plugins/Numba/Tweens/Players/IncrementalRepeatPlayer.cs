@@ -26,7 +26,7 @@ namespace Numba.Tweens.Players
                 
                 foreach (var tweaker in _playable.Tweakers)
                 {
-                    var incrementedTo = tweaker.EvaluateObject(2f, Formula.Linear);
+                    var incrementedTo = tweaker.EvaluateObject(2f);
                     (tweaker.FromObject, tweaker.ToObject) = (tweaker.ToObject, incrementedTo);
                 }
             }

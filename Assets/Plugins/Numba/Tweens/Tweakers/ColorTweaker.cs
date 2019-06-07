@@ -11,6 +11,6 @@ namespace Numba.Tweens.Tweakers
     {
         public ColorTweaker(Color from, Color to, Action<Color> action) : base(from, to, action) { }
 
-        public override Color Evaluate(float value, Formula formula) => formula?.Calculate(From, To, value) ?? throw new ArgumentNullException("Formula can't be a null");
+        public override Color Evaluate(float value, Formula formula) => formula?.Calculate(From, To, value) ?? Formula.Linear.Calculate(From, To, value);
     }
 }

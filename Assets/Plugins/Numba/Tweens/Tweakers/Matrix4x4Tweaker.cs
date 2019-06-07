@@ -11,6 +11,6 @@ namespace Numba.Tweens.Tweakers
     {
         public Matrix4x4Tweaker(Matrix4x4 from, Matrix4x4 to, Action<Matrix4x4> action) : base(from, to, action) { }
 
-        public override Matrix4x4 Evaluate(float value, Formula formula) => formula?.Calculate(From, To, value) ?? throw new ArgumentNullException("Formula can't be a null");
+        public override Matrix4x4 Evaluate(float value, Formula formula) => formula?.Calculate(From, To, value) ?? Formula.Linear.Calculate(From, To, value);
     }
 }
