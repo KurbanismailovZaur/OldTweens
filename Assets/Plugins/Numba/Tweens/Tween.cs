@@ -13,12 +13,12 @@ namespace Numba.Tweens
 
         public Formula Formula { get; set; }
 
-		public new float Duration
+        public new float Duration
         {
-			get => base.Duration;
+            get => base.Duration;
             set
             {
-                if (IsPlaying) ThrowBusyException("duration");
+                if (IsBusy) ThrowChangeBusyException("duration");
 
                 _duration = Mathf.Max(value, 0f);
                 CalculateFullDuration();
@@ -33,10 +33,7 @@ namespace Numba.Tweens
 
         protected override void SetTime(float time, bool normalized = false)
         {
-            if (!normalized)
-                time = time / FullDuration;
-				
-			time = Mathf.Clamp01(time);
+            NormalizeTime(ref time, normalized);
 
             if (_currentTime == time) return;
 
@@ -44,9 +41,13 @@ namespace Numba.Tweens
 
             _currentTime = time;
 
-            Tweaker.Apply(time, Formula);
+            Tweaker?.Apply(WrapCeil(time * Count, 1f), Formula);
         }
 
-        public void SetTime1(float time, bool normalized) => SetTime(time, normalized);
+        public new Tween Play() => (Tween)base.Play();
+
+        public new Tween Pause() => (Tween)base.Pause();
+
+        public new Tween Stop() => (Tween)base.Stop();
     }
 }

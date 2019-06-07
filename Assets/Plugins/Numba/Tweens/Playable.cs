@@ -7,7 +7,7 @@ using System;
 
 namespace Numba.Tweens
 {
-    public abstract class Playable
+    public abstract class Playable : CustomYieldInstruction
     {
         public class BusyException : ApplicationException
         {
@@ -24,6 +24,8 @@ namespace Numba.Tweens
 
         public float Duration => _duration;
 
+        public float FullDuration { get; protected set; }
+
         protected int _count;
 
         public int Count
@@ -31,9 +33,9 @@ namespace Numba.Tweens
             get => _count;
             set
             {
-                if (IsPlaying) ThrowBusyException("count");
+                if (IsBusy) ThrowChangeBusyException("count");
 
-                _count = Mathf.Max(value, 0);
+                _count = Mathf.Max(value, 1);
                 CalculateFullDuration();
             }
         }
@@ -45,7 +47,7 @@ namespace Numba.Tweens
             get => _loopType;
             set
             {
-                if (IsPlaying) ThrowBusyException("loop type");
+                if (IsBusy) ThrowChangeBusyException("loop type");
 
                 _loopType = Enum.IsDefined(typeof(LoopType), value) ? value : throw new ArgumentException("Loop type must be forward, backward or mirror");
                 CalculateFullDuration();
@@ -54,11 +56,23 @@ namespace Numba.Tweens
 
         protected float _currentTime;
 
-        private bool _isPlaying;
+        private PlayState _playState = PlayState.Stop;
 
-        public bool IsPlaying => _isPlaying || (_parent?.IsPlaying ?? false);
+        public PlayState PlayState => _playState;
 
-        public float FullDuration { get; protected set; }
+        public bool IsBusy => _playState != PlayState.Stop || (_parent?.IsBusy ?? false);
+
+        private IEnumerator _playEnumerator;
+
+        private Coroutine _playRoutine;
+
+        private float _startTime;
+
+        private float _endTime;
+
+        private float _pauseTime;
+
+        public override bool keepWaiting => _playState != PlayState.Stop;
 
         public Playable(float duration, int count = 1, LoopType loopType = LoopType.Forward) : this(null, duration, count, loopType) { }
 
@@ -72,7 +86,7 @@ namespace Numba.Tweens
             CalculateFullDuration();
         }
 
-        protected void ThrowBusyException(string fieldName) => throw new BusyException($"Trying to change {fieldName} on playable with name \"{Name}\" when playing");
+        protected void ThrowChangeBusyException(string fieldName) => throw new BusyException($"Trying to change {fieldName} on playable with name \"{Name}\" when playing");
 
         protected void CalculateFullDuration() => FullDuration = Duration * GetLoopTypeDurationMultiplier(LoopType) * Count;
 
@@ -80,12 +94,20 @@ namespace Numba.Tweens
 
         protected abstract void SetTime(float time, bool normalized = false);
 
+        protected void NormalizeTime(ref float time, bool normalized)
+        {
+            if (!normalized)
+                time = time / FullDuration;
+
+            time = Mathf.Clamp01(time);
+        }
+
         protected void GenerateTimeshiftEvents(float nextTime)
         {
             if (nextTime > _currentTime)
                 GenerateForwardTimeshiftEvents(nextTime);
             else
-				GenerateBackwardTimeshiftEvents(nextTime);
+                GenerateBackwardTimeshiftEvents(nextTime);
         }
 
         private void GenerateForwardTimeshiftEvents(float nextTime)
@@ -114,7 +136,7 @@ namespace Numba.Tweens
             }
 
             // Update event.
-            if (nextTime != nextLoop)
+            if (nextTime != loopDuration * nextLoop)
                 Debug.Log("Updated");
 
             // Complete event.
@@ -122,7 +144,7 @@ namespace Numba.Tweens
                 Debug.Log("Completed");
         }
 
-		private void GenerateBackwardTimeshiftEvents(float nextTime)
+        private void GenerateBackwardTimeshiftEvents(float nextTime)
         {
             // The same thing as Duration / FullDuration.
             var loopDuration = 1f / Count;
@@ -156,7 +178,89 @@ namespace Numba.Tweens
                 Debug.Log("Completed");
         }
 
-
         private bool IsBetween(float value, float min, float max) => value >= min && value <= max;
+
+        protected float WrapCeil(float value, float max)
+        {
+            if (value == 0f) return 0f;
+
+            var wrapped = value % max;
+            return (wrapped == 0f) ? max : wrapped;
+        }
+
+        public Playable Play()
+        {
+            if (_playState == PlayState.Play || (_parent?.IsBusy ?? false)) throw new BusyException("Playable already playing");
+
+            if (_playState == PlayState.Stop)
+            {
+                _playState = PlayState.Play;
+                _playEnumerator = PlayEnumerator();
+            }
+            else
+            {
+                var pauseDuration = Time.time - _pauseTime;
+
+                _startTime += pauseDuration;
+                _endTime += pauseDuration;
+
+                Debug.Log("Resumed");
+            }
+
+            _playRoutine = RoutineHelper.Instance.StartCoroutine(_playEnumerator);
+
+            return this;
+        }
+
+        private IEnumerator PlayEnumerator()
+        {
+            _currentTime = 0f;
+
+            _startTime = Time.time;
+            _endTime = _startTime + FullDuration;
+
+            while (Time.time < _endTime)
+            {
+                SetTime(GetNormalizedLoopedTime(Time.time - _startTime), true);
+                yield return null;
+            }
+
+            SetTime(GetNormalizedLoopedTime(FullDuration), true);
+
+            _playState = PlayState.Stop;
+        }
+
+        private float GetNormalizedLoopedTime(float time)
+        {
+            time /= FullDuration;
+            return _loopType == LoopType.Forward ? time : _loopType == LoopType.Backward ? 1f - time : WrapCeil(time * 2f, 1f);
+        }
+
+        public Playable Pause()
+        {
+            if (_playState != PlayState.Play) return this;
+
+            RoutineHelper.Instance.StopCoroutine(_playRoutine);
+
+            _pauseTime = Time.time;
+
+            _playState = PlayState.Pause;
+
+            Debug.Log("Paused");
+
+            return this;
+        }
+
+        public Playable Stop()
+        {
+            if (_playState == PlayState.Stop) return this;
+
+            RoutineHelper.Instance.StopCoroutine(_playRoutine);
+            _playState = PlayState.Stop;
+
+            Debug.Log("Stoped");
+
+            return this;
+        }
     }
 }

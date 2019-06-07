@@ -27,13 +27,13 @@ namespace Namespace
 
         private void Start()
         {
-            _tween = new Tween(new FloatTweaker(0f, 2f, (x) => _cube1.SetPositionX(x)), 4f, Formula.ExpoOut, 1);
-			
+            _tween = new Tween(new FloatTweaker(0f, 1f, (x) => _cube1.SetPositionX(x)), 1f, Formula.ExpoIn, 1, LoopType.Mirror).Play();
+            new Tween(new FloatTweaker(0f, 90f, (x) => _cube1.SetEulerAnglesX(x)), 1f, Formula.ExpoOut, 1, LoopType.Mirror).Play();
         }
 
         private void Update()
         {
-			_tween.SetTime1(_time, false);
+			// _tween.SetTime1(_time, false);
         }
     }
 }
