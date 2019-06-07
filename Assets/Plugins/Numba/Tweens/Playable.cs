@@ -4,21 +4,17 @@ using UnityEngine;
 using System.Threading.Tasks;
 using System.Linq;
 using System;
+using Numba.Tweens.Exceptions;
 
 namespace Numba.Tweens
 {
     public abstract class Playable : CustomYieldInstruction
     {
-        public class BusyException : ApplicationException
-        {
-            public BusyException(string message) : base(message) { }
-        }
-
         internal Playable _parent;
 
         public Playable Parent => _parent;
 
-        public string Name { get; set; }
+        public string Name { get; set; } = "None";
 
         protected float _duration;
 
@@ -54,17 +50,25 @@ namespace Numba.Tweens
             }
         }
 
+        internal protected abstract List<Tweaker> Tweakers { get; }
+
         protected float _currentTime;
 
         private PlayState _playState = PlayState.Stop;
 
         public PlayState PlayState => _playState;
 
-        public bool IsBusy => _playState != PlayState.Stop || (_parent?.IsBusy ?? false);
+        public bool IsPlaying => _playState == PlayState.Play;
+
+        public bool IsPaused => _playState == PlayState.Pause;
+
+        public bool IsStoped => _playState == PlayState.Stop;
+
+        public bool IsBusy => !IsStoped || (_parent?.IsBusy ?? false);
 
         private IEnumerator _playEnumerator;
 
-        private Coroutine _playRoutine;
+        private Coroutine _playCoroutine;
 
         private float _startTime;
 
@@ -72,7 +76,7 @@ namespace Numba.Tweens
 
         private float _pauseTime;
 
-        public override bool keepWaiting => _playState != PlayState.Stop;
+        public override bool keepWaiting => !IsStoped;
 
         public Playable(float duration, int count = 1, LoopType loopType = LoopType.Forward) : this(null, duration, count, loopType) { }
 
@@ -92,7 +96,7 @@ namespace Numba.Tweens
 
         private int GetLoopTypeDurationMultiplier(LoopType loopType) => loopType == LoopType.Mirror ? 2 : 1;
 
-        protected abstract void SetTime(float time, bool normalized = false);
+        internal protected abstract void SetTime(float time, bool normalized = false);
 
         protected void NormalizeTime(ref float time, bool normalized)
         {
@@ -190,9 +194,9 @@ namespace Numba.Tweens
 
         public Playable Play()
         {
-            if (_playState == PlayState.Play || (_parent?.IsBusy ?? false)) throw new BusyException("Playable already playing");
+            if (IsPlaying || (_parent?.IsBusy ?? false)) throw new BusyException($"Playable with name \"{Name}\" already playing");
 
-            if (_playState == PlayState.Stop)
+            if (IsStoped)
             {
                 _playState = PlayState.Play;
                 _playEnumerator = PlayEnumerator();
@@ -207,7 +211,7 @@ namespace Numba.Tweens
                 Debug.Log("Resumed");
             }
 
-            _playRoutine = RoutineHelper.Instance.StartCoroutine(_playEnumerator);
+            _playCoroutine = CoroutineHelper.Instance.StartCoroutine(_playEnumerator);
 
             return this;
         }
@@ -238,9 +242,9 @@ namespace Numba.Tweens
 
         public Playable Pause()
         {
-            if (_playState != PlayState.Play) return this;
+            if (!IsPlaying) return this;
 
-            RoutineHelper.Instance.StopCoroutine(_playRoutine);
+            CoroutineHelper.Instance.StopCoroutine(_playCoroutine);
 
             _pauseTime = Time.time;
 
@@ -253,9 +257,9 @@ namespace Numba.Tweens
 
         public Playable Stop()
         {
-            if (_playState == PlayState.Stop) return this;
+            if (IsStoped) return this;
 
-            RoutineHelper.Instance.StopCoroutine(_playRoutine);
+            CoroutineHelper.Instance.StopCoroutine(_playCoroutine);
             _playState = PlayState.Stop;
 
             Debug.Log("Stoped");

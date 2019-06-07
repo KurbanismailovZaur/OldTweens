@@ -10,30 +10,35 @@ using Numba.Extensions;
 
 namespace Namespace
 {
-	public abstract class MyClass{
-		protected internal float a;
-	}
+    public abstract class MyClass
+    {
+        protected internal float a;
+    }
 
     public class TweenTest : MonoBehaviour
     {
         [SerializeField]
         private Transform _cube1;
 
-		[SerializeField]
-		[Range(-2f, 7f)]
-		private float _time;
+        [SerializeField]
+        [Range(-2f, 7f)]
+        private float _time;
 
-		private Tween _tween;
+        private Tween _tween;
 
-        private void Start()
+        private IEnumerator Start()
         {
-            _tween = new Tween(new FloatTweaker(0f, 1f, (x) => _cube1.SetPositionX(x)), 1f, Formula.ExpoIn, 1, LoopType.Mirror).Play();
-            new Tween(new FloatTweaker(0f, 90f, (x) => _cube1.SetEulerAnglesX(x)), 1f, Formula.ExpoOut, 1, LoopType.Mirror).Play();
-        }
+            var tween = new Tween(new FloatTweaker(0f, 1f, (x) => _cube1.SetPositionX(x)), 1f, Formula.Linear);
+            
+            var player = tween.PlayRepeated(3);
 
-        private void Update()
-        {
-			// _tween.SetTime1(_time, false);
+            yield return new WaitForSeconds(1.5f);
+
+            player.Pause();
+
+            yield return new WaitForSeconds(1f);
+
+            player.Play();
         }
     }
 }

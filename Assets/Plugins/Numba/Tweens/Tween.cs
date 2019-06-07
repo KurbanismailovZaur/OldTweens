@@ -25,13 +25,21 @@ namespace Numba.Tweens
             }
         }
 
-        public Tween(Tweaker tweaker, float duration, Formula formula, int count = 1, LoopType loopType = LoopType.Forward) : base(duration, count, loopType)
+        internal protected override List<Tweaker> Tweakers => new List<Tweaker> { Tweaker };
+
+        public Tween(Tweaker tweaker, float duration, Formula formula = null, int count = 1, LoopType loopType = LoopType.Forward) : this(null, tweaker, duration, formula, count, loopType)
         {
             Tweaker = tweaker;
             Formula = formula;
         }
 
-        protected override void SetTime(float time, bool normalized = false)
+        public Tween(string name, Tweaker tweaker, float duration, Formula formula = null, int count = 1, LoopType loopType = LoopType.Forward) : base(name, duration, count, loopType)
+        {
+            Tweaker = tweaker;
+            Formula = formula;
+        }
+
+        internal protected override void SetTime(float time, bool normalized = false)
         {
             NormalizeTime(ref time, normalized);
 
