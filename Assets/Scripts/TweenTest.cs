@@ -21,19 +21,10 @@ namespace Namespace
 
         private Tween _tween;
 
-        private IEnumerator Start()
+        private void Start()
         {
-            var tween = new Tween(new FloatTweaker(0f, 1f, (x) => _cube1.SetPositionX(x)), 1f);
-            
-            var player = tween.PlayRepeated(3);
-
-            yield return new WaitForSeconds(1.5f);
-
-            player.Pause();
-
-            yield return new WaitForSeconds(1f);
-
-            player.Play();
+            new Tween(new FloatTweaker(0f, 1f, x => _cube1.SetPositionX(x)), 1f, Formula.ExpoInOut).PlayIncrementalRepeated();
+            new Tween(new FloatTweaker(1f, 2f, s => _cube1.localScale = new Vector3(s, s, s)), 1f, Formula.BackInOut, 2).PlayIncrementalRepeated(4);
         }
     }
 }

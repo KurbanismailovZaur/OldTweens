@@ -10,7 +10,7 @@ namespace Numba.Tweens
 {
     public abstract class Playable : CustomYieldInstruction
     {
-        internal Playable _parent;
+        internal protected Playable _parent;
 
         public Playable Parent => _parent;
 
@@ -54,7 +54,7 @@ namespace Numba.Tweens
 
         protected float _currentTime;
 
-        private PlayState _playState = PlayState.Stop;
+        protected PlayState _playState = PlayState.Stop;
 
         public PlayState PlayState => _playState;
 
@@ -66,15 +66,15 @@ namespace Numba.Tweens
 
         public bool IsBusy => !IsStoped || (_parent?.IsBusy ?? false);
 
-        private IEnumerator _playEnumerator;
+        protected IEnumerator _playEnumerator;
 
-        private Coroutine _playCoroutine;
+        protected Coroutine _playCoroutine;
 
-        private float _startTime;
+        protected float _startTime;
 
-        private float _endTime;
+        protected float _endTime;
 
-        private float _pauseTime;
+        protected float _pauseTime;
 
         public override bool keepWaiting => !IsStoped;
 
@@ -94,7 +94,7 @@ namespace Numba.Tweens
 
         protected void CalculateFullDuration() => FullDuration = Duration * GetLoopTypeDurationMultiplier(LoopType) * Count;
 
-        private int GetLoopTypeDurationMultiplier(LoopType loopType) => loopType == LoopType.Mirror ? 2 : 1;
+        protected int GetLoopTypeDurationMultiplier(LoopType loopType) => loopType == LoopType.Mirror ? 2 : 1;
 
         internal protected abstract void SetTime(float time, bool normalized = false);
 
@@ -114,7 +114,7 @@ namespace Numba.Tweens
                 GenerateBackwardTimeshiftEvents(nextTime);
         }
 
-        private void GenerateForwardTimeshiftEvents(float nextTime)
+        protected void GenerateForwardTimeshiftEvents(float nextTime)
         {
             // The same thing as Duration / FullDuration.
             var loopDuration = 1f / Count;
@@ -148,7 +148,7 @@ namespace Numba.Tweens
                 Debug.Log("Completed");
         }
 
-        private void GenerateBackwardTimeshiftEvents(float nextTime)
+        protected void GenerateBackwardTimeshiftEvents(float nextTime)
         {
             // The same thing as Duration / FullDuration.
             var loopDuration = 1f / Count;
@@ -182,7 +182,7 @@ namespace Numba.Tweens
                 Debug.Log("Completed");
         }
 
-        private bool IsBetween(float value, float min, float max) => value >= min && value <= max;
+        protected bool IsBetween(float value, float min, float max) => value >= min && value <= max;
 
         protected float WrapCeil(float value, float max)
         {
@@ -216,7 +216,7 @@ namespace Numba.Tweens
             return this;
         }
 
-        private IEnumerator PlayEnumerator()
+        protected IEnumerator PlayEnumerator()
         {
             _currentTime = 0f;
 
@@ -234,7 +234,7 @@ namespace Numba.Tweens
             _playState = PlayState.Stop;
         }
 
-        private float GetNormalizedLoopedTime(float time)
+        protected float GetNormalizedLoopedTime(float time)
         {
             time /= FullDuration;
             return _loopType == LoopType.Forward ? time : _loopType == LoopType.Backward ? 1f - time : WrapCeil(time * 2f, 1f);

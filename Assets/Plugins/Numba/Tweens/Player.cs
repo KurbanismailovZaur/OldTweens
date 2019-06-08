@@ -16,7 +16,7 @@ namespace Numba.Tweens
 
 		protected IEnumerator _playEnumerator;
 
-        private Coroutine _playCoroutine;
+        protected Coroutine _playCoroutine;
 
 		protected bool _needCompletePause;
 
