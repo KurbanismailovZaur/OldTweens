@@ -15,16 +15,28 @@ namespace Namespace
         [SerializeField]
         private Transform _cube1;
 
-        [SerializeField]
-        [Range(-2f, 7f)]
-        private float _time;
-
         private Tween _tween;
+
+        [SerializeField]
+        [Range(1, 4)]
+        private int _count = 1;
+
+        [SerializeField]
+        private LoopType _loopType;
+
+        [SerializeField]
+        [Range(0f, 1f)]
+        private float _time;
 
         private void Start()
         {
-            new Tween(new FloatTweaker(0f, 1f, x => _cube1.SetPositionX(x)), 1f, Formula.ExpoInOut).PlayIncrementalRepeated();
-            new Tween(new FloatTweaker(1f, 2f, s => _cube1.localScale = new Vector3(s, s, s)), 1f, Formula.BackInOut, 2).PlayIncrementalRepeated(4);
+            _tween = new Tween(new FloatTweaker(0f, 1f, x => _cube1.SetPositionX(x)), 1f, Formula.ExpoInOut, _count, _loopType);
+            // _tween.Play();
+        }
+
+        private void Update()
+        {
+            _tween.SetTimeYEAAAHH(_time);
         }
     }
 }

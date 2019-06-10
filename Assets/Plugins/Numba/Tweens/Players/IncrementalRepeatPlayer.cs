@@ -23,11 +23,21 @@ namespace Numba.Tweens.Players
                     yield return _playable.Play();
                     _needCompletePause = false;
                 }
-                
+
+                if (_playable.LoopType == LoopType.Mirror) continue;
+
                 foreach (var tweaker in _playable.Tweakers)
                 {
-                    var incrementedTo = tweaker.EvaluateObject(2f);
-                    (tweaker.FromObject, tweaker.ToObject) = (tweaker.ToObject, incrementedTo);
+                    if (_playable.LoopType == LoopType.Forward)
+                    {
+                        var incrementedTo = tweaker.EvaluateObject(2f);
+                        (tweaker.FromObject, tweaker.ToObject) = (tweaker.ToObject, incrementedTo);
+                    }
+                    else
+                    {
+                        var decrementedFrom = tweaker.EvaluateObject(-1f);
+                        (tweaker.FromObject, tweaker.ToObject) = (decrementedFrom, tweaker.FromObject);
+                    }
                 }
             }
 

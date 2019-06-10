@@ -39,18 +39,13 @@ namespace Numba.Tweens
             Formula = formula;
         }
 
-        internal protected override void SetTime(float time, bool normalized = false)
+        protected override void SetTime(float time, bool normalized = false)
         {
-            NormalizeTime(ref time, normalized);
-
-            if (_currentTime == time) return;
-
-            GenerateTimeshiftEvents(time);
-
-            _currentTime = time;
-
-            Tweaker?.Apply(WrapCeil(time * Count, 1f), Formula);
+            if (GenerateTimeshiftEvents(ref time, normalized)) 
+                Tweaker?.Apply(time, Formula);
         }
+
+        public void SetTimeYEAAAHH(float time) => SetTime(time, true);
 
         public new Tween Play() => (Tween)base.Play();
 
