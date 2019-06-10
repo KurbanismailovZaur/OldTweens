@@ -31,7 +31,7 @@ namespace Namespace
         private IEnumerator Start()
         {
             _tween = new Tween(new FloatTweaker(0f, 1f, x => _cube1.SetPositionX(x)), 1f, Formula.ExpoInOut, _count, _loopType);
-            _tween.Play();
+            _tween.PlayRepeated();
 
             // yield return new WaitForSeconds(3f);
 

@@ -18,12 +18,6 @@ namespace Numba.Tweens.Players
             {
                 yield return _playable.Play();
 
-                if (_needCompletePause)
-                {
-                    yield return _playable.Play();
-                    _needCompletePause = false;
-                }
-
                 if (_playable.LoopType == LoopType.Mirror) continue;
 
                 foreach (var tweaker in _playable.Tweakers)

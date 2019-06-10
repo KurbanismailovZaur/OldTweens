@@ -14,11 +14,11 @@ namespace Numba.Tweens
 
         public Player(Playable playable) => _playable = playable ?? throw new ArgumentNullException(nameof(playable));
 
-		protected IEnumerator _playEnumerator;
+        protected IEnumerator _playEnumerator;
 
         protected Coroutine _playCoroutine;
 
-		protected bool _needCompletePause;
+        protected Coroutine _continueCoroutine;
 
         public PlayState PlayState => _playEnumerator == null ? PlayState.Stop : _playable.IsPaused ? PlayState.Pause : PlayState.Play;
 
@@ -34,23 +34,37 @@ namespace Numba.Tweens
         {
             if (IsPlaying) throw new BusyException($"Player for playable with name \"{_playable.Name}\" already playing");
 
-			if (IsStoped)
-				_playEnumerator = PlayEnumerator(count);
-			else
-				_needCompletePause = true;
-
-            _playCoroutine = CoroutineHelper.Instance.StartCoroutine(_playEnumerator);
+            if (IsPaused)
+                _continueCoroutine = CoroutineHelper.Instance.StartCoroutine(ContinueCoroutine(_playEnumerator));
+            else
+                _playCoroutine = CoroutineHelper.Instance.StartCoroutine(PlayEnumerator(count));
 
             return this;
         }
 
         protected abstract IEnumerator PlayEnumerator(int count);
 
+        protected IEnumerator ContinueCoroutine(IEnumerator playEnumerator)
+        {
+            _playable.Play();
+            yield return playEnumerator.Current;
+
+            _playCoroutine = CoroutineHelper.Instance.StartCoroutine(playEnumerator);
+
+            _continueCoroutine = null;
+        }
+
         public Player Pause()
         {
             if (!IsPlaying) return this;
 
-			CoroutineHelper.Instance.StopCoroutine(_playCoroutine);
+            if (_continueCoroutine != null)
+            {
+                CoroutineHelper.Instance.StopCoroutine(_continueCoroutine);
+                _continueCoroutine = null;
+            }
+            else
+                CoroutineHelper.Instance.StopCoroutine(_playCoroutine);
 
             _playable.Pause();
 
@@ -61,7 +75,14 @@ namespace Numba.Tweens
         {
             if (IsStoped) return this;
 
-            CoroutineHelper.Instance.StopCoroutine(_playCoroutine);
+            if (_continueCoroutine != null)
+            {
+                CoroutineHelper.Instance.StopCoroutine(_continueCoroutine);
+                _continueCoroutine = null;
+            }
+            else if (_playCoroutine != null)
+                CoroutineHelper.Instance.StopCoroutine(_playCoroutine);
+
             _playEnumerator = null;
 
             _playable.Stop();

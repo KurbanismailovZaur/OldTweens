@@ -283,6 +283,7 @@ namespace Numba.Tweens
             SetTime(FullDuration);
 
             _playState = PlayState.Stop;
+            _currentTime = 0f;
         }
 
         public Playable Pause()
@@ -306,7 +307,7 @@ namespace Numba.Tweens
 
             CoroutineHelper.Instance.StopCoroutine(_playCoroutine);
             _playState = PlayState.Stop;
-
+            
             _currentTime = 0f;
 
             Debug.Log("Stoped");
