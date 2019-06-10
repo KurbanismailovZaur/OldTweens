@@ -46,7 +46,6 @@ namespace Numba.Tweens
                 if (IsBusy) ThrowChangeBusyException("loop type");
 
                 _loopType = Enum.IsDefined(typeof(LoopType), value) ? value : throw new ArgumentException("Loop type must be forward, backward or mirror");
-                _currentTime = _loopType == LoopType.Backward ? 1f : 0f;
 
                 CalculateFullDuration();
             }
@@ -102,23 +101,25 @@ namespace Numba.Tweens
 
         protected bool GenerateTimeshiftEvents(ref float time, bool normalized)
         {
-            if (!normalized) 
+            if (!normalized)
                 time = Mathf.Clamp01(time / FullDuration);
 
             if (time == _currentTime) return false;
 
-            if (_loopType == LoopType.Forward)
-            {
-                if (time > _currentTime)
-                    GenerateForwardTimeshiftEvents(ref time);
-                else 
-                    GenerateForwardReverseTimeshiftEvents(ref time);
-            }
+            if (time > _currentTime)
+                GenerateTimeshiftEvents(ref time);
+            else
+                GenerateReverseTimeshiftEvents(ref time);
+
+            if (_loopType == LoopType.Backward)
+                time = 1f - time;
+            else if (_loopType == LoopType.Mirror)
+                time = time <= 0.5f ? time * 2f : (1f - time) * 2;
 
             return true;
         }
 
-        protected void GenerateForwardTimeshiftEvents(ref float time)
+        protected void GenerateTimeshiftEvents(ref float time)
         {
             // Almost the same thing as Duration / FullDuration.
             var loopDuration = 1f / Count;
@@ -159,7 +160,7 @@ namespace Numba.Tweens
             time /= loopDuration;
         }
 
-        protected void GenerateForwardReverseTimeshiftEvents(ref float time)
+        protected void GenerateReverseTimeshiftEvents(ref float time)
         {
             // The same thing as Duration / FullDuration.
             var loopDuration = 1f / Count;
@@ -241,39 +242,17 @@ namespace Numba.Tweens
 
             while (Time.time < _endTime)
             {
-                var time = (Time.time - _startTime) / FullDuration;
+                var time = (Time.time - _startTime);
 
                 SetTime(time);
 
                 yield return null;
             }
 
-            SetTime(1f);
+            SetTime(FullDuration);
 
             _playState = PlayState.Stop;
         }
-
-        // protected void SetMirrorTime(float time)
-        // {
-        //     var ceiled = WrapCeil(time * 2f, 1f);
-
-        //     bool isForwardSubLoop = true;
-
-        //     if (time != 0f)
-        //     {
-        //         var halfLoopDuration = 1f / (Count * 2);
-        //         var currentSubLoop = time / halfLoopDuration;
-
-        //         isForwardSubLoop = ((int)currentSubLoop % 2 == 0 && currentSubLoop != (int)currentSubLoop) || ((int)currentSubLoop % 2 != 0 && currentSubLoop == (int)currentSubLoop) ? true : false;
-        //     }
-
-        //     _allowStartEvent = _currentTime == 0f;
-        //     _allowCompleteEvent = time == 1f;
-
-        //     SetTime(isForwardSubLoop ? ceiled : 1f - ceiled, true);
-
-        //     _allowStartEvent = _allowCompleteEvent = true;
-        // }
 
         public Playable Pause()
         {
@@ -297,7 +276,7 @@ namespace Numba.Tweens
             CoroutineHelper.Instance.StopCoroutine(_playCoroutine);
             _playState = PlayState.Stop;
 
-            _currentTime = _loopType == LoopType.Backward ? 1f : 0f;
+            _currentTime = 0f;
 
             Debug.Log("Stoped");
 

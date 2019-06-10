@@ -28,15 +28,21 @@ namespace Namespace
         [Range(0f, 1f)]
         private float _time;
 
-        private void Start()
+        private IEnumerator Start()
         {
             _tween = new Tween(new FloatTweaker(0f, 1f, x => _cube1.SetPositionX(x)), 1f, Formula.ExpoInOut, _count, _loopType);
-            // _tween.Play();
+            _tween.Play();
+
+            yield return new WaitForSeconds(3f);
+
+            _tween.Pause();
+
+            _tween.Play();
         }
 
         private void Update()
         {
-            _tween.SetTimeYEAAAHH(_time);
+            // _tween.SetTimeYEAAAHH(_time);
         }
     }
 }

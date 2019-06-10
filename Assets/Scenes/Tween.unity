@@ -241,7 +241,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _cube1: {fileID: 1733659872}
-  _count: 2
+  _count: 1
   _loopType: 0
   _time: 0
 --- !u!4 &946505731
