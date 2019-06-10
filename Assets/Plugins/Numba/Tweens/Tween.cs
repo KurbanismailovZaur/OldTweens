@@ -41,8 +41,16 @@ namespace Numba.Tweens
 
         protected override void SetTime(float time, bool normalized = false)
         {
-            if (GenerateTimeshiftEvents(ref time, normalized)) 
-                Tweaker?.Apply(time, Formula);
+            var events = GetTimeshiftEvents(time, normalized);
+
+            if (events != null)
+            {
+                for (int i = 0; i < events.Count; i++)
+                {
+                    Tweaker?.Apply(events[i].time, Formula);
+                    events[i].action(events[i].loopIndex);
+                }
+            }
         }
 
         public void SetTimeYEAAAHH(float time) => SetTime(time, true);

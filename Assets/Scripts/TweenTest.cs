@@ -33,11 +33,13 @@ namespace Namespace
             _tween = new Tween(new FloatTweaker(0f, 1f, x => _cube1.SetPositionX(x)), 1f, Formula.ExpoInOut, _count, _loopType);
             _tween.Play();
 
-            yield return new WaitForSeconds(3f);
+            // yield return new WaitForSeconds(3f);
 
-            _tween.Pause();
+            // _tween.Pause();
 
-            _tween.Play();
+            // _tween.Play();
+
+            yield return null;
         }
 
         private void Update()
