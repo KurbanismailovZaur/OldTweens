@@ -10,6 +10,24 @@ namespace Numba.Tweens
 {
     public abstract class Playable : CustomYieldInstruction
     {
+        protected struct Event
+        {
+            public float time;
+
+            public Action<int> action;
+
+            public int loopIndex;
+
+            public Event(float time, Action<int> action, int loopIndex)
+            {
+                this.time = time;
+                this.action = action;
+                this.loopIndex = loopIndex;
+            }
+
+            public void Call() => action(loopIndex);
+        }
+
         internal protected Playable _parent;
 
         public Playable Parent => _parent;
@@ -99,47 +117,26 @@ namespace Numba.Tweens
 
         protected abstract void SetTime(float time, bool normalized = false);
 
-        protected List<(float time, Action<int> action, int loopIndex)> GetTimeshiftEvents(float time, bool normalized)
+        protected List<Event> GetTimeShiftEvents(float time, bool normalized)
         {
             if (!normalized)
                 time = Mathf.Clamp01(time / FullDuration);
 
             if (time == _currentTime) return null;
 
-            var events = time > _currentTime ? GetTimeshiftEvents(time) : GetReverseTimeshiftEvents(time);
-
-            if (_loopType == LoopType.Backward)
-            {
-                for (int i = 0; i < events.Count; i++)
-                {
-                    var data = events[i];
-                    data.time = 1f - data.time;
-                    events[i] = data;
-                }
-            }
-            else if (_loopType == LoopType.Mirror)
-            {
-                for (int i = 0; i < events.Count; i++)
-                {
-                    var data = events[i];
-                    data.time = data.time <= 0.5f ? data.time * 2f : (1f - data.time) * 2f;
-                    events[i] = data;
-                }
-            }
-
-            return events;
+            return time > _currentTime ? GetTimeShiftEvents(time) : GetReverseTimeShiftEvents(time);
         }
 
-        protected List<(float time, Action<int> action, int loopIndex)> GetTimeshiftEvents(float time)
+        protected List<Event> GetTimeShiftEvents(float time)
         {
-            var events = new List<(float time, Action<int> action, int loopIndex)>();
+            var events = new List<Event>();
 
             // Almost the same thing as Duration / FullDuration.
             var loopDuration = 1f / Count;
 
             // Start event.
             if (_currentTime == 0f)
-                events.Add((0f, (li) => Debug.Log($"Started {li}"), 0));
+                events.Add(new Event(WrapAndLoopTime(0f, loopDuration), (li) => Debug.Log($"Started {li}"), 0));
 
             // Loop events.
             var currentLoop = Mathf.FloorToInt(_currentTime / loopDuration);
@@ -150,47 +147,35 @@ namespace Numba.Tweens
                 var loop = loopDuration * i;
 
                 if (IsBetween(loop, _currentTime, time) && loop != _currentTime)
-                    events.Add((loop, (li) => Debug.Log($"Loop {li} completed"), i - 1));
+                    events.Add(new Event(WrapAndLoopTime(loop, loopDuration), (li) => Debug.Log($"Loop {li} completed"), i - 1));
 
                 if (IsBetween(loop, _currentTime, time) && loop != time)
-                    events.Add((loop, (li) => Debug.Log($"Loop {li} started"), i));
+                    events.Add(new Event(WrapAndLoopTime(loop, loopDuration), (li) => Debug.Log($"Loop {li} started"), i));
             }
 
             // Update event.
             if (!Mathf.Approximately(time, loopDuration * nextLoop))
-                events.Add((time, (li) => Debug.Log($"Loop {li} updated"), nextLoop));
+                events.Add(new Event(WrapAndLoopTime(time, loopDuration), (li) => Debug.Log($"Loop {li} updated"), nextLoop));
 
             // Complete event.
             if (time == 1f)
-                events.Add((1f, (li) => Debug.Log($"Completed {li}"), Count - 1));
+                events.Add(new Event(WrapAndLoopTime(1f, loopDuration), (li) => Debug.Log($"Completed {li}"), Count - 1));
 
             _currentTime = time;
-
-            for (int i = 0; i < events.Count; i++)
-            {
-                // To save calculation accuracy it is important to leave if time equals to zero or one 
-                if (events[i].time == 0f || events[i].time == 1f) continue;
-
-                var data = events[i];
-                data.time = WrapCeil(data.time, loopDuration);
-                data.time /= loopDuration;
-
-                events[i] = data;
-            }
 
             return events;
         }
 
-        protected List<(float time, Action<int> action, int loopIndex)> GetReverseTimeshiftEvents(float time)
+        protected List<Event> GetReverseTimeShiftEvents(float time)
         {
-            var events = new List<(float time, Action<int> action, int loopIndex)>();
+            var events = new List<Event>();
 
             // The same thing as Duration / FullDuration.
             var loopDuration = 1f / Count;
 
             // Start event.
             if (_currentTime == 1f)
-                events.Add((1f, (li) => Debug.Log($"Started {li}"), 0));
+                events.Add(new Event(WrapAndLoopTime(1f, loopDuration), (li) => Debug.Log($"Started {li}"), 0));
 
             // Loop events.
             var currentLoop = Mathf.CeilToInt(_currentTime / loopDuration);
@@ -201,37 +186,45 @@ namespace Numba.Tweens
                 var loop = loopDuration * i;
 
                 if (IsBetween(loop, time, _currentTime) && loop != _currentTime)
-                    events.Add((loop, (li) => Debug.Log($"Loop {li} completed"), Count - i - 1));
+                    events.Add(new Event(WrapAndLoopTime(loop, loopDuration), (li) => Debug.Log($"Loop {li} completed"), Count - i - 1));
 
                 if (IsBetween(loop, time, _currentTime) && loop != time)
-                    events.Add((loop, (li) => Debug.Log($"Loop {li} started"), Count - i));
+                    events.Add(new Event(WrapAndLoopTime(loop, loopDuration), (li) => Debug.Log($"Loop {li} started"), Count - i));
             }
 
             // Update event.
             if (!Mathf.Approximately(time, loopDuration * nextLoop))
-                events.Add((time, (li) => Debug.Log($"Loop {li} updated"), Count - nextLoop));
+                events.Add(new Event(WrapAndLoopTime(time, loopDuration), (li) => Debug.Log($"Loop {li} updated"), Count - nextLoop));
 
             // Complete event.
             if (time == 0f)
-                events.Add((1f, (li) => Debug.Log($"Completed {li}"), Count - 1));
+                events.Add(new Event(WrapAndLoopTime(1f, loopDuration), (li) => Debug.Log($"Completed {li}"), Count - 1));
 
             _currentTime = time;
-
-            for (int i = 0; i < events.Count; i++)
-            {
-                // To save calculation accuracy it is important to leave if time equals to zero or one 
-                if (events[i].time == 0f || events[i].time == 1f) continue;
-
-                var data = events[i];
-                data.time = WrapCeil(data.time, loopDuration);
-                data.time /= loopDuration;
-
-                events[i] = data;
-            }
 
             return events;
         }
 
+        protected float WrapAndLoopTime(float time, float loopDuration)
+        {
+            if (time != 0f && time != 1f)
+            {
+                time = WrapCeil(time, loopDuration);
+                time /= loopDuration;
+            }
+
+            switch (_loopType)
+            {
+                case LoopType.Forward:
+                    return time;
+                case LoopType.Backward:
+                    return 1f - time;
+                case LoopType.Mirror:
+                    return time <= 0.5f ? time * 2f : (1f - time) * 2f;
+                default:
+                    throw new Exception("Loop type must be a valid value");
+            }
+        }
         protected bool IsBetween(float value, float min, float max) => value >= min && value <= max;
 
         protected float WrapCeil(float value, float max)
@@ -307,7 +300,7 @@ namespace Numba.Tweens
 
             CoroutineHelper.Instance.StopCoroutine(_playCoroutine);
             _playState = PlayState.Stop;
-            
+
             _currentTime = 0f;
 
             Debug.Log("Stoped");

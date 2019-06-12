@@ -27,11 +27,7 @@ namespace Numba.Tweens
 
         internal protected override List<Tweaker> Tweakers => new List<Tweaker> { Tweaker };
 
-        public Tween(Tweaker tweaker, float duration, Formula formula = null, int count = 1, LoopType loopType = LoopType.Forward) : this(null, tweaker, duration, formula, count, loopType)
-        {
-            Tweaker = tweaker;
-            Formula = formula;
-        }
+        public Tween(Tweaker tweaker, float duration, Formula formula = null, int count = 1, LoopType loopType = LoopType.Forward) : this(null, tweaker, duration, formula, count, loopType) { }
 
         public Tween(string name, Tweaker tweaker, float duration, Formula formula = null, int count = 1, LoopType loopType = LoopType.Forward) : base(name, duration, count, loopType)
         {
@@ -41,14 +37,14 @@ namespace Numba.Tweens
 
         protected override void SetTime(float time, bool normalized = false)
         {
-            var events = GetTimeshiftEvents(time, normalized);
+            var events = GetTimeShiftEvents(time, normalized);
 
             if (events != null)
             {
                 for (int i = 0; i < events.Count; i++)
                 {
                     Tweaker?.Apply(events[i].time, Formula);
-                    events[i].action(events[i].loopIndex);
+                    events[i].Call();
                 }
             }
         }
