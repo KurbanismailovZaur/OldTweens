@@ -15,41 +15,49 @@ namespace Namespace
         [SerializeField]
         private Transform _cube1;
 
-        private Tween _tween;
+        private Tween _tween1;
 
+        [Header("Tween")]
         [SerializeField]
         [Range(1, 4)]
-        private int _count = 1;
+        private int _tweenCount = 1;
 
         [SerializeField]
-        private LoopType _loopType;
+        private LoopType _tweenLoopType;
 
+        [SerializeField]
+        [Range(0f, 1f)]
+        private float _tweenDuration = 1f;
+
+        private Sequence _sequence1;
+
+        [Header("Sequence")]
+        [SerializeField]
+        [Range(1, 4)]
+        private int _sequenceCount = 1;
+
+        [SerializeField]
+        private LoopType _sequenceLoopType;
+
+        [Header("Common")]
         [SerializeField]
         [Range(0f, 1f)]
         private float _time;
 
         private IEnumerator Start()
         {
-            _tween = new Tween(new FloatTweaker(0f, 1f, x => _cube1.SetPositionX(x)), 1f, Formula.ExpoInOut, _count, _loopType);
-            _tween.Play();
+            _tween1 = new Tween(new FloatTweaker(0f, 1f, x => _cube1.SetPositionX(x)), _tweenDuration, Formula.ExpoInOut, _tweenCount, _tweenLoopType);
 
-            // Sequence sequence = new Sequence();
-            // sequence.Append(_tween);
-
-            // sequence.Play();
-
-            // yield return new WaitForSeconds(3f);
-
-            // _tween.Pause();
-
-            // _tween.Play();
+            // _sequence1 = new Sequence("Sequence1", _sequenceCount, _sequenceLoopType);
+            // _sequence1.Append(_tween1);
 
             yield return null;
         }
 
         private void Update()
         {
-            // _tween.SetTimeYEAAAHH(_time);
+            _tween1.SetTimeIIIIUUUHH(_time);
+            // _sequence1.SetTimeIIIUUUHH(_time);
         }
     }
 }

@@ -35,21 +35,25 @@ namespace Numba.Tweens
             Formula = formula;
         }
 
-        protected override void SetTime(float time, bool normalized = false)
+        protected internal override void SetTime(float time, bool normalized = false)
         {
-            var events = GetTimeShiftEvents(time, normalized);
+            var events = GetTimeShiftEvents(ref time, normalized);
 
             if (events != null)
             {
+                var loopDuration = Mathf.Approximately(_duration, 0f) ? 0f : 1f / Count;
+
                 for (int i = 0; i < events.Count; i++)
                 {
-                    Tweaker?.Apply(events[i].time, Formula);
+                    _currentTime = events[i].time;
+
+                    Tweaker?.Apply(LoopTime(events[i].time, loopDuration), Formula);
                     events[i].Call();
                 }
             }
         }
 
-        public void SetTimeYEAAAHH(float time) => SetTime(time, true);
+        public void SetTimeIIIIUUUHH(float time) => SetTime(time, true);
 
         public new Tween Play() => (Tween)base.Play();
 
