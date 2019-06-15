@@ -241,8 +241,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _cube1: {fileID: 1733659872}
-  _count: 3
-  _loopType: 2
+  _tweenCount: 3
+  _tweenLoopType: 2
+  _tweenDuration: 1
+  _sequenceCount: 1
+  _sequenceLoopType: 0
   _time: 0
 --- !u!4 &946505731
 Transform:

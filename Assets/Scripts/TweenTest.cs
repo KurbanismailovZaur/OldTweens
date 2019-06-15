@@ -47,16 +47,19 @@ namespace Namespace
         private IEnumerator Start()
         {
             _tween1 = new Tween(new FloatTweaker(0f, 1f, x => _cube1.SetPositionX(x)), _tweenDuration, Formula.ExpoInOut, _tweenCount, _tweenLoopType);
+            _tween1.Play(); 
 
             // _sequence1 = new Sequence("Sequence1", _sequenceCount, _sequenceLoopType);
             // _sequence1.Append(_tween1);
+
+            // _sequence1.Play();
 
             yield return null;
         }
 
         private void Update()
         {
-            _tween1.SetTimeIIIIUUUHH(_time);
+            // _tween1.SetTimeIIIIUUUHH(_time);
             // _sequence1.SetTimeIIIUUUHH(_time);
         }
     }

@@ -9,7 +9,9 @@ namespace Numba.Tweens
 {
     public class Sequence : Playable
     {
-        protected List<(float time, Playable playable)> _playables = new List<(float, Playable)>();
+        protected List<(int order, float time, Playable playable)> _playables = new List<(int order, float, Playable)>();
+
+        protected int _nextOrder;
 
         public Sequence(int count = 1, LoopType loopType = LoopType.Forward) : this(null, count, loopType) { }
 
@@ -19,33 +21,59 @@ namespace Numba.Tweens
 
         protected internal override void SetTime(float time, bool normalized = false)
         {
-            var events = GetTimeShiftEvents(ref time, normalized);
+            if (!normalized)
+                time = Mathf.Clamp01(time / FullDuration);
+
+            var events = GetTimeShiftEvents(time);
+
+            if (events == null)
+                return;
 
             if (FullDuration == 0f)
             {
-                // Invoke start and loop start events.
-                events[0].Call();
-
-                // Invoke all event sequentially in all playables.
-                for (int i = 0; i < _playables.Count; i++)
-                    _playables[i].playable.SetTime(_playables[i].playable.FullDuration);
-
-                // Invoke complete and loop complete events.
-                events[1].Call();
+                
             }
-
-            if (events != null)
+            else if (events != null)
             {
-                for (int i = 0; i < events.Count; i++)
-                {
-                    _currentTime = events[i].time;
-
-                    events[i].Call();
-                }
+                
             }
         }
 
-		public void SetTimeIIIUUUHH(float time) => SetTime(time, true);
+        protected List<(int order, float time, Playable playable)> GetCurrentPlayables(float time)
+        {
+            var currentTime = _currentTime * FullDuration;
+            var nextTime = time * FullDuration;
+
+            var playables = new List<(int order, float time, Playable playable)>();
+
+            for (int i = 0; i < _playables.Count; i++)
+            {
+                if (_playables[i].time + _playables[i].playable.FullDuration >= currentTime && _playables[i].time < nextTime)
+                    playables.Add(_playables[i]);
+            }
+
+            playables.Sort((a, b) => a.order.CompareTo(b.order));
+
+            // Add last playables which can't be started later.
+            if (nextTime == 1f)
+            {
+                var lastPlayables = new List<(int order, float time, Playable playable)>();
+
+                for (int i = 0; i < _playables.Count; i++)
+                {
+                    if (_playables[i].time == FullDuration)
+                        lastPlayables.Add(_playables[i]);
+                }
+
+                lastPlayables.Sort((a, b) => a.order.CompareTo(b.order));
+
+                playables.AddRange(lastPlayables);
+            }
+
+            return playables;
+        }
+
+        public void SetTimeIIIUUUHH(float time) => SetTime(time, true);
 
         protected bool CheckOnCyclicReference(Sequence sequence)
         {
@@ -64,11 +92,11 @@ namespace Numba.Tweens
             return false;
         }
 
-        public void Append(Playable playable) => Append(playable, _playables.Count);
+        public void Append(Playable playable) => Append(playable, _nextOrder++);
 
         public void Append(Playable playable, int order) => Insert(_duration, playable, order);
 
-        public void Insert(float time, Playable playable) => Insert(time, playable, _playables.Count);
+        public void Insert(float time, Playable playable) => Insert(time, playable, _nextOrder++);
 
         public void Insert(float time, Playable playable, int order)
         {
@@ -78,15 +106,27 @@ namespace Numba.Tweens
             if (playable is Sequence sequence && CheckOnCyclicReference(sequence))
                 throw new ArgumentException($"Cyclic references detected. Sequence \"{playable.Name}\" or its child sequences (in whole hierarchy) already referenced to sequence \"{Name}\"");
 
-            if (_playables.Contains((order, playable)))
+            if (_playables.FindIndex(p => p.playable == playable) != -1)
                 throw new ArgumentException($"Sequence \"{Name}\" already contains playable with name \"{playable.Name}\"");
 
-            _playables.Insert(order, (Mathf.Max(time, 0f), playable));
+            order = Mathf.Max(order, 0);
+
+            var playables = _playables.FindAll(p => p.order >= order);
+
+            for (int i = 0; i < playables.Count; i++)
+            {
+                var p = playables[i];
+                p.order += 1;
+                playables[i] = p;
+            }
+
+            _playables.Add((order, Mathf.Max(time, 0f), playable));
             playable._parent = this;
 
             playable.FullDurationChanged += Playable_FullDurationChanged;
 
-            CalculateAllDurations();
+            _duration = Mathf.Max(time + playable.FullDuration, _duration);
+            CalculateFullDuration();
         }
 
         protected void CalculateDuration()
@@ -99,8 +139,8 @@ namespace Numba.Tweens
 
         protected void CalculateAllDurations()
         {
-			CalculateDuration();
-			CalculateFullDuration();
+            CalculateDuration();
+            CalculateFullDuration();
         }
 
         public new Sequence Play() => (Sequence)base.Play();
