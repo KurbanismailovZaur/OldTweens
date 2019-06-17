@@ -133,7 +133,7 @@ namespace Numba.Tweens
 
         internal protected abstract List<Tweaker> Tweakers { get; }
 
-        protected float _currentTime;
+        internal protected float _currentTime;
 
         protected PlayState _playState = PlayState.Stop;
 
@@ -177,6 +177,8 @@ namespace Numba.Tweens
 
         protected int GetLoopTypeDurationMultiplier(LoopType loopType) => loopType == LoopType.Mirror ? 2 : 1;
 
+        internal protected abstract void SetStateTo(float time);
+
         protected internal abstract void SetTime(float time, bool normalized = false);
 
         protected Events GetTimeShiftEvents(float time)
@@ -186,17 +188,17 @@ namespace Numba.Tweens
             {
                 var events = new Events(2 + Count * 2);
 
-                events.Add(0f, (li) => Debug.Log($"Started {li}"), 0, Phase.Started);
-                events.Add(0f, (li) => Debug.Log($"Loop started {li}"), 0, Phase.LoopStarted);
+                events.Add(0f, (li) => Debug.Log($"{Name} started {li}"), 0, Phase.Started);
+                events.Add(0f, (li) => Debug.Log($"{Name} loop started {li}"), 0, Phase.LoopStarted);
 
                 for (int i = 0; i < Count - 1; i++)
                 {
-                    events.Add(new Event(1f, (li) => Debug.Log($"loop completed {li}"), i, Phase.LoopCompleted));
-                    events.Add(new Event(0f, (li) => Debug.Log($"Loop started {li}"), i + 1, Phase.LoopStarted));
+                    events.Add(new Event(1f, (li) => Debug.Log($"{Name} loop completed {li}"), i, Phase.LoopCompleted));
+                    events.Add(new Event(0f, (li) => Debug.Log($"{Name} loop started {li}"), i + 1, Phase.LoopStarted));
                 }
 
-                var completeEvent = new Event(1f, (li) => Debug.Log($"loop completed {li}"), Count - 1, Phase.LoopCompleted);
-                completeEvent.Add((li) => Debug.Log($"Completed {li}"), Count - 1, Phase.Completed);
+                var completeEvent = new Event(1f, (li) => Debug.Log($"{Name} loop completed {li}"), Count - 1, Phase.LoopCompleted);
+                completeEvent.Add((li) => Debug.Log($"{Name} completed {li}"), Count - 1, Phase.Completed);
 
                 events.Add(completeEvent);
 
@@ -217,7 +219,7 @@ namespace Numba.Tweens
 
             // Start event.
             if (_currentTime == 0f)
-                events.Add(0f, (li) => Debug.Log($"Started {li}"), 0, Phase.Started);
+                events.Add(0f, (li) => Debug.Log($"{Name} started {li}"), 0, Phase.Started);
 
             // Loop events.
             var currentLoop = Mathf.FloorToInt(_currentTime / loopDuration);
@@ -228,19 +230,19 @@ namespace Numba.Tweens
                 var loop = loopDuration * i;
 
                 if (IsBetween(loop, _currentTime, time) && loop != _currentTime)
-                    events.Add(loop, (li) => Debug.Log($"Loop {li} completed"), i - 1, Phase.LoopCompleted);
+                    events.Add(loop, (li) => Debug.Log($"{Name} loop {li} completed"), i - 1, Phase.LoopCompleted);
 
                 if (IsBetween(loop, _currentTime, time) && loop != time)
-                    events.Add(loop, (li) => Debug.Log($"Loop {li} started"), i, Phase.LoopStarted);
+                    events.Add(loop, (li) => Debug.Log($"{Name} loop {li} started"), i, Phase.LoopStarted);
             }
 
             // Update event.
             if (!Mathf.Approximately(time, loopDuration * nextLoop))
-                events.Add(time, (li) => Debug.Log($"Loop {li} updated"), nextLoop, Phase.LoopUpdated);
+                events.Add(time, (li) => Debug.Log($"{Name} loop {li} updated"), nextLoop, Phase.LoopUpdated);
 
             // Complete event.
             if (time == 1f)
-                events.Add(1f, (li) => Debug.Log($"Completed {li}"), Count - 1, Phase.Completed);
+                events.Add(1f, (li) => Debug.Log($"{Name} completed {li}"), Count - 1, Phase.Completed);
 
             return events;
         }
@@ -254,7 +256,7 @@ namespace Numba.Tweens
 
             // Start event.
             if (_currentTime == 1f)
-                events.Add(1f, (li) => Debug.Log($"Started {li}"), 0, Phase.Started);
+                events.Add(1f, (li) => Debug.Log($"{Name} started {li}"), 0, Phase.Started);
 
             // Loop events.
             var currentLoop = Mathf.CeilToInt(_currentTime / loopDuration);
@@ -265,19 +267,19 @@ namespace Numba.Tweens
                 var loop = loopDuration * i;
 
                 if (IsBetween(loop, time, _currentTime) && loop != _currentTime)
-                    events.Add(loop, (li) => Debug.Log($"Loop {li} completed"), Count - i - 1, Phase.LoopCompleted);
+                    events.Add(loop, (li) => Debug.Log($"{Name} loop {li} completed"), Count - i - 1, Phase.LoopCompleted);
 
                 if (IsBetween(loop, time, _currentTime) && loop != time)
-                    events.Add(loop, (li) => Debug.Log($"Loop {li} started"), Count - i, Phase.LoopStarted);
+                    events.Add(loop, (li) => Debug.Log($"{Name} loop {li} started"), Count - i, Phase.LoopStarted);
             }
 
             // Update event.
             if (!Mathf.Approximately(time, loopDuration * nextLoop))
-                events.Add(time, (li) => Debug.Log($"Loop {li} updated"), Count - nextLoop, Phase.LoopUpdated);
+                events.Add(time, (li) => Debug.Log($"{Name} loop {li} updated"), Count - nextLoop, Phase.LoopUpdated);
 
             // Complete event.
             if (time == 0f)
-                events.Add(0f, (li) => Debug.Log($"Completed {li}"), Count - 1, Phase.Completed);
+                events.Add(0f, (li) => Debug.Log($"{Name} completed {li}"), Count - 1, Phase.Completed);
 
             return events;
         }
@@ -291,6 +293,14 @@ namespace Numba.Tweens
                 return 0f;
 
             return WrapCeil(time, loopDuration) / loopDuration;
+        }
+
+        protected float WrapCeil(float value, float max)
+        {
+            if (value == 0f) return 0f;
+
+            var wrapped = value % max;
+            return (wrapped == 0f) ? max : wrapped;
         }
 
         protected float LoopTime(float time)
@@ -309,14 +319,6 @@ namespace Numba.Tweens
         }
 
         protected bool IsBetween(float value, float min, float max) => value >= min && value <= max;
-
-        protected float WrapCeil(float value, float max)
-        {
-            if (value == 0f) return 0f;
-
-            var wrapped = value % max;
-            return (wrapped == 0f) ? max : wrapped;
-        }
 
         public Playable Play()
         {

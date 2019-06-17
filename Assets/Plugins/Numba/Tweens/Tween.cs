@@ -35,6 +35,8 @@ namespace Numba.Tweens
             Formula = formula;
         }
 
+        internal protected override void SetStateTo(float time) => Tweaker?.Apply(LoopTime(time), Formula);
+
         protected internal override void SetTime(float time, bool normalized = false)
         {
             if (!normalized)
@@ -53,13 +55,13 @@ namespace Numba.Tweens
             {
                 _currentTime = 0f;
 
-                Tweaker?.Apply(LoopTime(WrapTime(events[0].time, loopDuration, Phase.Started)), Formula);
+                Tweaker?.Apply(LoopTime(events[0].time), Formula);
                 events[0].CallAll();
 
                 startIndex += 1;
             }
 
-            // Calling events between first (exclusive) and last (exclusive).
+            // Calling events between first (inclusive/exclusive) and last (exclusive).
             for (int i = startIndex; i < events.Count - 1; i++)
             {
                 _currentTime = events[i].time;
@@ -74,16 +76,8 @@ namespace Numba.Tweens
             _currentTime = events[events.Count - 1].time;
 
             // Calling update or complete and loop complete events.
-            if (events[events.Count - 1].phases[0] == Phase.LoopUpdated)
-            {
-                Tweaker?.Apply(LoopTime(WrapTime(events[events.Count - 1].time, loopDuration, Phase.LoopUpdated)), Formula);
-                events[events.Count - 1].Call(0);
-            }
-            else
-            {
-                Tweaker?.Apply(LoopTime(WrapTime(events[events.Count - 1].time, loopDuration, Phase.Completed)), Formula);
-                events[events.Count - 1].CallAll();
-            }
+            Tweaker?.Apply(LoopTime(WrapTime(events[events.Count - 1].time, loopDuration, events[events.Count - 1].phases[0] == Phase.LoopUpdated ? Phase.LoopUpdated : Phase.LoopCompleted)), Formula);
+            events[events.Count - 1].CallAll();
         }
 
         public void SetTimeIIIIUUUHH(float time) => SetTime(time, true);

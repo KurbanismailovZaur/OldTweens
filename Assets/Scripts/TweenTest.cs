@@ -15,29 +15,46 @@ namespace Namespace
         [SerializeField]
         private Transform _cube1;
 
+        [SerializeField]
+        private Transform _cube2;
+
         private Tween _tween1;
 
-        [Header("Tween")]
+        private Tween _tween2;
+
+        [Header("Tween 1")]
         [SerializeField]
         [Range(1, 4)]
-        private int _tweenCount = 1;
+        private int _tween1Count = 1;
 
         [SerializeField]
-        private LoopType _tweenLoopType;
+        private LoopType _tween1LoopType;
 
         [SerializeField]
         [Range(0f, 1f)]
-        private float _tweenDuration = 1f;
+        private float _tween1Duration = 1f;
+
+        [Header("Tween 2")]
+        [SerializeField]
+        [Range(1, 4)]
+        private int _tween2Count = 1;
+
+        [SerializeField]
+        private LoopType _tween2LoopType;
+
+        [SerializeField]
+        [Range(0f, 1f)]
+        private float _tween2Duration = 1f;
 
         private Sequence _sequence1;
 
-        [Header("Sequence")]
+        [Header("Sequence 1")]
         [SerializeField]
         [Range(1, 4)]
-        private int _sequenceCount = 1;
+        private int _sequence1Count = 1;
 
         [SerializeField]
-        private LoopType _sequenceLoopType;
+        private LoopType _sequence1LoopType;
 
         [Header("Common")]
         [SerializeField]
@@ -46,13 +63,17 @@ namespace Namespace
 
         private IEnumerator Start()
         {
-            _tween1 = new Tween(new FloatTweaker(0f, 1f, x => _cube1.SetPositionX(x)), _tweenDuration, Formula.ExpoInOut, _tweenCount, _tweenLoopType);
-            _tween1.Play(); 
+            _tween1 = new Tween("Tween 1", new FloatTweaker(0f, 1f, x => _cube1.SetPositionX(x)), _tween1Duration, Formula.ExpoInOut, _tween1Count, _tween1LoopType);
+            _tween2 = new Tween("Tween 2", new FloatTweaker(1f, 2f, x => _cube2.SetPositionX(x)), _tween2Duration, Formula.ExpoInOut, _tween2Count, _tween2LoopType);
 
-            // _sequence1 = new Sequence("Sequence1", _sequenceCount, _sequenceLoopType);
-            // _sequence1.Append(_tween1);
+            // _tween1.Play(); 
 
-            // _sequence1.Play();
+            _sequence1 = new Sequence("Sequence 1", _sequence1Count, _sequence1LoopType);
+            
+            _sequence1.Append(_tween1);
+            // _sequence1.Append(_tween2);
+
+            _sequence1.Play();
 
             yield return null;
         }
