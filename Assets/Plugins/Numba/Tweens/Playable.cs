@@ -78,9 +78,9 @@ namespace Numba.Tweens
             public Event this[int index] => _events[index];
         }
 
-        internal protected Playable _parent;
+        internal protected Sequence _parent;
 
-        public Playable Parent => _parent;
+        public Sequence Parent => _parent;
 
         public string Name { get; set; }
 
@@ -188,16 +188,16 @@ namespace Numba.Tweens
             {
                 var events = new Events(2 + Count * 2);
 
-                events.Add(0f, (li) => Debug.Log($"{Name} started {li}"), 0, Phase.Started);
-                events.Add(0f, (li) => Debug.Log($"{Name} loop started {li}"), 0, Phase.LoopStarted);
+                events.Add(_currentTime, (li) => Debug.Log($"{Name} started {li}"), 0, Phase.Started);
+                events.Add(_currentTime, (li) => Debug.Log($"{Name} loop started {li}"), 0, Phase.LoopStarted);
 
                 for (int i = 0; i < Count - 1; i++)
                 {
-                    events.Add(new Event(1f, (li) => Debug.Log($"{Name} loop completed {li}"), i, Phase.LoopCompleted));
-                    events.Add(new Event(0f, (li) => Debug.Log($"{Name} loop started {li}"), i + 1, Phase.LoopStarted));
+                    events.Add(new Event(1f - _currentTime, (li) => Debug.Log($"{Name} loop completed {li}"), i, Phase.LoopCompleted));
+                    events.Add(new Event(_currentTime, (li) => Debug.Log($"{Name} loop started {li}"), i + 1, Phase.LoopStarted));
                 }
 
-                var completeEvent = new Event(1f, (li) => Debug.Log($"{Name} loop completed {li}"), Count - 1, Phase.LoopCompleted);
+                var completeEvent = new Event(1f - _currentTime, (li) => Debug.Log($"{Name} loop completed {li}"), Count - 1, Phase.LoopCompleted);
                 completeEvent.Add((li) => Debug.Log($"{Name} completed {li}"), Count - 1, Phase.Completed);
 
                 events.Add(completeEvent);
@@ -303,9 +303,9 @@ namespace Numba.Tweens
             return (wrapped == 0f) ? max : wrapped;
         }
 
-        protected float LoopTime(float time)
+        protected float LoopTime(float time, LoopType loopType)
         {
-            switch (_loopType)
+            switch (loopType)
             {
                 case LoopType.Forward:
                     return time;
@@ -361,7 +361,8 @@ namespace Numba.Tweens
             SetTime(FullDuration);
 
             _playState = PlayState.Stop;
-            _currentTime = 0f;
+
+            ResetCurrentTime(0f);
         }
 
         public Playable Pause()
@@ -386,11 +387,15 @@ namespace Numba.Tweens
             CoroutineHelper.Instance.StopCoroutine(_playCoroutine);
             _playState = PlayState.Stop;
 
-            _currentTime = 0f;
+            ResetCurrentTime(0f);
 
             Debug.Log("Stoped");
 
             return this;
         }
+
+        protected internal abstract void ResetCurrentTime(float time);
+
+        protected internal abstract void ResetState(float time);
     }
 }
