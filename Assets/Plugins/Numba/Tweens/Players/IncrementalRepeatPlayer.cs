@@ -20,19 +20,19 @@ namespace Numba.Tweens.Players
 
                 if (_playable.LoopType == LoopType.Mirror) continue;
 
-                foreach (var tweaker in _playable.Tweakers)
-                {
-                    if (_playable.LoopType == LoopType.Forward)
-                    {
-                        var incrementedTo = tweaker.EvaluateObject(2f);
-                        (tweaker.FromObject, tweaker.ToObject) = (tweaker.ToObject, incrementedTo);
-                    }
-                    else
-                    {
-                        var decrementedFrom = tweaker.EvaluateObject(-1f);
-                        (tweaker.FromObject, tweaker.ToObject) = (decrementedFrom, tweaker.FromObject);
-                    }
-                }
+                // foreach (var tweaker in _playable.Tweakers)
+                // {
+                //     if (_playable.LoopType == LoopType.Forward)
+                //     {
+                //         var incrementedTo = tweaker.EvaluateObject(2f);
+                //         (tweaker.FromObject, tweaker.ToObject) = (tweaker.ToObject, incrementedTo);
+                //     }
+                //     else
+                //     {
+                //         var decrementedFrom = tweaker.EvaluateObject(-1f);
+                //         (tweaker.FromObject, tweaker.ToObject) = (decrementedFrom, tweaker.FromObject);
+                //     }
+                // }
             }
 
             _playEnumerator = null;

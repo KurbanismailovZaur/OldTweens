@@ -7,7 +7,7 @@ using System;
 
 namespace Numba.Tweens
 {
-    public class Tween : Playable
+    public sealed class Tween : Playable
     {
         public Tweaker Tweaker { get; set; }
 
@@ -25,8 +25,6 @@ namespace Numba.Tweens
             }
         }
 
-        internal protected override List<Tweaker> Tweakers => new List<Tweaker> { Tweaker };
-
         public Tween(Tweaker tweaker, float duration, Formula formula = null, int count = 1, LoopType loopType = LoopType.Forward) : this(null, tweaker, duration, formula, count, loopType) { }
 
         public Tween(string name, Tweaker tweaker, float duration, Formula formula = null, int count = 1, LoopType loopType = LoopType.Forward) : base(name, duration, count, loopType)
@@ -35,60 +33,67 @@ namespace Numba.Tweens
             Formula = formula;
         }
 
-        internal protected override void SetStateTo(float time) => Tweaker?.Apply(LoopTime(time, _loopType), Formula);
-
-        protected internal override void SetTime(float time, bool normalized = false)
+        internal override void SetTime(float time, bool normalized = false)
         {
             if (!normalized)
-                time = Mathf.Clamp01(time / FullDuration);
+                NormalizeTime(ref time);
 
-            // It is normal to get events when time == 0 even if Backward mode is turned on.
             var events = GetTimeShiftEvents(time);
 
-            if (events == null)
-                return;
+            if (events == null) return;
 
-            var loopDuration = Mathf.Approximately(_duration, 0f) ? 0f : 1f / Count;
             int startIndex = 0;
 
             // Calling start and loop start events.
             if (events[0].phases[0] == Phase.Started)
             {
-                _currentTime = 0f;
-
+                // WrapTime not needed, because _current time will be equal to 0 or 1.
                 Tweaker?.Apply(LoopTime(events[0].time, _loopType), Formula);
                 events[0].CallAll();
 
-                startIndex += 1;
+                startIndex = 1;
             }
+
+            var normalizedDuration = GetNormalizedDuration();
+            float wrappedTime;
 
             // Calling events between first (inclusive/exclusive) and last (exclusive).
             for (int i = startIndex; i < events.Count - 1; i++)
             {
-                _currentTime = events[i].time;
+                // It is not requared to save intermediate current time values, 
+                // but may be useful when exception was throwed in tweaker.
+                _currentTime = events[events.Count - 1].time;
 
                 for (int j = 0; j < events[i].Count; j++)
                 {
-                    Tweaker?.Apply(LoopTime(WrapTime(events[i].time, loopDuration, events[i].phases[j]), _loopType), Formula);
+                    if (events[i].phases[j] == Phase.LoopStarted)
+                        wrappedTime = GetPlayingStartTime();
+                    else
+                    {
+                        if (Mathf.Approximately(normalizedDuration, 0f))
+                            wrappedTime = events[i].time;
+                        else
+                            wrappedTime = WrapTime(events[i].time, normalizedDuration);
+                    }
+
+                    Tweaker?.Apply(LoopTime(wrappedTime, _loopType), Formula);
                     events[i].Call(j);
                 }
             }
 
+            // Save last current time value, again for exceptions in tweaker.
             _currentTime = events[events.Count - 1].time;
 
+            if (Mathf.Approximately(normalizedDuration, 0f))
+                wrappedTime = events[events.Count - 1].time;
+            else
+                wrappedTime = WrapTime(events[events.Count - 1].time, normalizedDuration);
+
             // Calling update or complete and loop complete events.
-            Tweaker?.Apply(LoopTime(WrapTime(events[events.Count - 1].time, loopDuration, events[events.Count - 1].phases[0] == Phase.LoopUpdated ? Phase.LoopUpdated : Phase.LoopCompleted), _loopType), Formula);
+            Tweaker?.Apply(LoopTime(wrappedTime, _loopType), Formula);
             events[events.Count - 1].CallAll();
         }
 
-        protected internal override void ResetCurrentTime(float time) => _currentTime = time;
-
-        protected internal override void ResetState(float time)
-        {
-            ResetCurrentTime(time);
-            Tweaker?.Apply(time, Formula);
-        }
-
-        public void SetTimeIIIIUUUHH(float time) => SetTime(time, true);
+        public void SetTimeIIIIUUUHH(float time) => SetTime(time);
     }
 }

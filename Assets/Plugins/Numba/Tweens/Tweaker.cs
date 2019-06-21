@@ -22,7 +22,7 @@ namespace Numba.Tweens
     {
         internal protected override object FromObject
         {
-            get => From; 
+            get => From;
             set => From = (T)value;
         }
 
@@ -30,7 +30,7 @@ namespace Numba.Tweens
 
         internal protected override object ToObject
         {
-            get => To; 
+            get => To;
             set => To = (T)value;
         }
 
@@ -49,6 +49,16 @@ namespace Numba.Tweens
 
         public abstract T Evaluate(float value, Formula formula = null);
 
-        public override void Apply(float value, Formula formula = null) => Action?.Invoke(Evaluate(value, formula));
+        public override void Apply(float value, Formula formula = null)
+        {
+            try
+            {
+                Action?.Invoke(Evaluate(value, formula));
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+        }
     }
 }

@@ -10,6 +10,7 @@ namespace Numba.Tweens
 {
     public abstract class Playable : CustomYieldInstruction
     {
+        #region Types
         protected enum Phase : byte
         {
             Started,
@@ -77,11 +78,9 @@ namespace Numba.Tweens
 
             public Event this[int index] => _events[index];
         }
+        #endregion
 
-        internal protected Sequence _parent;
-
-        public Sequence Parent => _parent;
-
+        #region Field, events and properties
         public string Name { get; set; }
 
         protected float _duration;
@@ -131,10 +130,13 @@ namespace Numba.Tweens
             }
         }
 
-        internal protected abstract List<Tweaker> Tweakers { get; }
-
         internal protected float _currentTime;
 
+        internal protected Sequence _parent;
+
+        public Sequence Parent => _parent;
+
+        #region Playing
         protected PlayState _playState = PlayState.Stop;
 
         public PlayState PlayState => _playState;
@@ -156,8 +158,10 @@ namespace Numba.Tweens
         protected float _endTime;
 
         protected float _pauseTime;
+        #endregion
 
         public override bool keepWaiting => !IsStoped;
+        #endregion
 
         public Playable(float duration, int count = 1, LoopType loopType = LoopType.Forward) : this(null, duration, count, loopType) { }
 
@@ -175,18 +179,26 @@ namespace Numba.Tweens
 
         protected void CalculateFullDuration() => FullDuration = Duration * GetLoopTypeDurationMultiplier(LoopType) * Count;
 
-        protected int GetLoopTypeDurationMultiplier(LoopType loopType) => loopType == LoopType.Mirror ? 2 : 1;
+        private int GetLoopTypeDurationMultiplier(LoopType loopType) => loopType == LoopType.Mirror ? 2 : 1;
 
-        internal protected abstract void SetStateTo(float time);
+        protected void NormalizeTime(ref float time)
+        {
+            var normalizedTime = time / FullDuration;
 
-        protected internal abstract void SetTime(float time, bool normalized = false);
+            time = float.IsNaN(normalizedTime) ? 0f :Mathf.Clamp01(normalizedTime);
+        }
+
+        internal abstract void SetTime(float time, bool normalized = false);
 
         protected Events GetTimeShiftEvents(float time)
         {
+            // Exit for both situations (when FullDuration equal or not to 0).
+            if (time == _currentTime) return null;
+
             // If playable starts and completes immediatly it is need to just generate all events.
             if (FullDuration == 0f)
             {
-                var events = new Events(2 + Count * 2);
+                var events = new Events();
 
                 events.Add(_currentTime, (li) => Debug.Log($"{Name} started {li}"), 0, Phase.Started);
                 events.Add(_currentTime, (li) => Debug.Log($"{Name} loop started {li}"), 0, Phase.LoopStarted);
@@ -205,12 +217,10 @@ namespace Numba.Tweens
                 return events;
             }
 
-            if (time == _currentTime) return null;
-
             return time > _currentTime ? GetForwardTimeShiftEvents(time) : GetReverseTimeShiftEvents(time);
         }
 
-        protected Events GetForwardTimeShiftEvents(float time)
+        private Events GetForwardTimeShiftEvents(float time)
         {
             var events = new Events();
 
@@ -229,10 +239,10 @@ namespace Numba.Tweens
             {
                 var loop = loopDuration * i;
 
-                if (IsBetween(loop, _currentTime, time) && loop != _currentTime)
+                if (loop > _currentTime && loop <= time)
                     events.Add(loop, (li) => Debug.Log($"{Name} loop {li} completed"), i - 1, Phase.LoopCompleted);
 
-                if (IsBetween(loop, _currentTime, time) && loop != time)
+                if (loop >= _currentTime && loop < time)
                     events.Add(loop, (li) => Debug.Log($"{Name} loop {li} started"), i, Phase.LoopStarted);
             }
 
@@ -247,7 +257,7 @@ namespace Numba.Tweens
             return events;
         }
 
-        protected Events GetReverseTimeShiftEvents(float time)
+        private Events GetReverseTimeShiftEvents(float time)
         {
             var events = new Events();
 
@@ -266,10 +276,10 @@ namespace Numba.Tweens
             {
                 var loop = loopDuration * i;
 
-                if (IsBetween(loop, time, _currentTime) && loop != _currentTime)
+                if (loop >= time && loop < _currentTime)
                     events.Add(loop, (li) => Debug.Log($"{Name} loop {li} completed"), Count - i - 1, Phase.LoopCompleted);
 
-                if (IsBetween(loop, time, _currentTime) && loop != time)
+                if (loop > time && loop <= _currentTime)
                     events.Add(loop, (li) => Debug.Log($"{Name} loop {li} started"), Count - i, Phase.LoopStarted);
             }
 
@@ -284,18 +294,9 @@ namespace Numba.Tweens
             return events;
         }
 
-        protected float WrapTime(float time, float loopDuration, Phase phase)
-        {
-            if (time == 0f || time == 1f)
-                return time;
+        protected float WrapTime(float time, float normalizedDuration) => WrapCeil(time, normalizedDuration) / normalizedDuration;
 
-            if (phase == Phase.Started || phase == Phase.LoopStarted)
-                return 0f;
-
-            return WrapCeil(time, loopDuration) / loopDuration;
-        }
-
-        protected float WrapCeil(float value, float max)
+        private float WrapCeil(float value, float max)
         {
             if (value == 0f) return 0f;
 
@@ -318,8 +319,23 @@ namespace Numba.Tweens
             }
         }
 
-        protected bool IsBetween(float value, float min, float max) => value >= min && value <= max;
+        // It is important to use 1 / count formula instead duration / FullDuration,
+        // otherwise in mirror mode we get wrong value.
+        protected float GetNormalizedDuration() => Mathf.Approximately(_duration, 0f) ? 0f : 1 / Count;
 
+        private float GetSelfPlayingDirection() => _loopType == LoopType.Backward ? -1f : 1f;
+
+        private float GetPlayingDirection()
+        {
+            if (_parent == null)
+                return 1f;
+
+            return _parent.GetSelfPlayingDirection() * _parent.GetPlayingDirection();
+        }
+
+        protected float GetPlayingStartTime() => Mathf.Approximately(GetPlayingDirection(), 1f) ? 0f : 1f;
+
+        #region Playing
         public Playable Play()
         {
             if (IsPlaying || (_parent?.IsBusy ?? false)) throw new BusyException($"Playable with name \"{Name}\" already playing");
@@ -362,7 +378,7 @@ namespace Numba.Tweens
 
             _playState = PlayState.Stop;
 
-            ResetCurrentTime(0f);
+            _currentTime = 0f;
         }
 
         public Playable Pause()
@@ -387,15 +403,12 @@ namespace Numba.Tweens
             CoroutineHelper.Instance.StopCoroutine(_playCoroutine);
             _playState = PlayState.Stop;
 
-            ResetCurrentTime(0f);
+            _currentTime = 0f;
 
             Debug.Log("Stoped");
 
             return this;
         }
-
-        protected internal abstract void ResetCurrentTime(float time);
-
-        protected internal abstract void ResetState(float time);
+        #endregion
     }
 }
