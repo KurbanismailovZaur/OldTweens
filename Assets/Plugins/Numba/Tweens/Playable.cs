@@ -185,10 +185,20 @@ namespace Numba.Tweens
         {
             var normalizedTime = time / FullDuration;
 
-            time = float.IsNaN(normalizedTime) ? 0f :Mathf.Clamp01(normalizedTime);
+            time = float.IsNaN(normalizedTime) ? 0f : Mathf.Clamp01(normalizedTime);
         }
 
         internal abstract void SetTime(float time, bool normalized = false);
+
+        protected bool GetEvents(ref float time, bool normalized, out Events events)
+        {
+            if (!normalized)
+                NormalizeTime(ref time);
+
+            events = GetTimeShiftEvents(time);
+
+            return events != null;
+        }
 
         protected Events GetTimeShiftEvents(float time)
         {
@@ -217,7 +227,7 @@ namespace Numba.Tweens
                 return events;
             }
 
-            return time > _currentTime ? GetForwardTimeShiftEvents(time) : GetReverseTimeShiftEvents(time);
+            return time > _currentTime ? GetForwardTimeShiftEvents(time) : GetBackwardTimeShiftEvents(time);
         }
 
         private Events GetForwardTimeShiftEvents(float time)
@@ -257,7 +267,7 @@ namespace Numba.Tweens
             return events;
         }
 
-        private Events GetReverseTimeShiftEvents(float time)
+        private Events GetBackwardTimeShiftEvents(float time)
         {
             var events = new Events();
 
@@ -294,6 +304,23 @@ namespace Numba.Tweens
             return events;
         }
 
+        protected float WrapTime(float eventTime, float normalizedDuration, Phase phase)
+        {
+            float wrappedTime;
+
+            if (phase == Phase.LoopStarted)
+                wrappedTime = GetPlayingStartTime();
+            else
+            {
+                if (Mathf.Approximately(normalizedDuration, 0f))
+                    wrappedTime = eventTime;
+                else
+                    wrappedTime = WrapTime(eventTime, normalizedDuration);
+            }
+
+            return wrappedTime;
+        }
+
         protected float WrapTime(float time, float normalizedDuration) => WrapCeil(time, normalizedDuration) / normalizedDuration;
 
         private float WrapCeil(float value, float max)
@@ -321,19 +348,19 @@ namespace Numba.Tweens
 
         // It is important to use 1 / count formula instead duration / FullDuration,
         // otherwise in mirror mode we get wrong value.
-        protected float GetNormalizedDuration() => Mathf.Approximately(_duration, 0f) ? 0f : 1 / Count;
+        protected float GetNormalizedDuration() => Mathf.Approximately(_duration, 0f) ? 0f : 1f / Count;
 
-        private float GetSelfPlayingDirection() => _loopType == LoopType.Backward ? -1f : 1f;
+        protected float GetSelfPlayingDirection() => _loopType == LoopType.Backward ? -1f : 1f;
 
-        private float GetPlayingDirection()
+        protected float GetHierarchyPlayingDirection()
         {
             if (_parent == null)
                 return 1f;
 
-            return _parent.GetSelfPlayingDirection() * _parent.GetPlayingDirection();
+            return _parent.GetSelfPlayingDirection() * _parent.GetHierarchyPlayingDirection();
         }
 
-        protected float GetPlayingStartTime() => Mathf.Approximately(GetPlayingDirection(), 1f) ? 0f : 1f;
+        protected float GetPlayingStartTime() => Mathf.Approximately(GetHierarchyPlayingDirection(), 1f) ? 0f : 1f;
 
         #region Playing
         public Playable Play()

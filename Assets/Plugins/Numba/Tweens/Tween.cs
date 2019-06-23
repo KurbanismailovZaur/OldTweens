@@ -35,12 +35,8 @@ namespace Numba.Tweens
 
         internal override void SetTime(float time, bool normalized = false)
         {
-            if (!normalized)
-                NormalizeTime(ref time);
-
-            var events = GetTimeShiftEvents(time);
-
-            if (events == null) return;
+            if (!GetEvents(ref time, normalized, out Events events))
+                return;
 
             int startIndex = 0;
 
@@ -62,19 +58,11 @@ namespace Numba.Tweens
             {
                 // It is not requared to save intermediate current time values, 
                 // but may be useful when exception was throwed in tweaker.
-                _currentTime = events[events.Count - 1].time;
+                _currentTime = events[i].time;
 
                 for (int j = 0; j < events[i].Count; j++)
                 {
-                    if (events[i].phases[j] == Phase.LoopStarted)
-                        wrappedTime = GetPlayingStartTime();
-                    else
-                    {
-                        if (Mathf.Approximately(normalizedDuration, 0f))
-                            wrappedTime = events[i].time;
-                        else
-                            wrappedTime = WrapTime(events[i].time, normalizedDuration);
-                    }
+                    wrappedTime = WrapTime(events[i].time, normalizedDuration, events[i].phases[j]);
 
                     Tweaker?.Apply(LoopTime(wrappedTime, _loopType), Formula);
                     events[i].Call(j);

@@ -106,8 +106,8 @@ namespace Namespace
 
             // _tween1.Play();
 
-            // _sequence1 = new Sequence("Sequence 1", _sequence1Count, _sequence1LoopType);
-            // _sequence1.Append(_tween1);
+            _sequence1 = new Sequence("Sequence 1", _sequence1Count, _sequence1LoopType);
+            _sequence1.Append(_tween1);
 
             // _sequence2 = new Sequence("Sequence 2", _sequence2Count, _sequence2LoopType);
             // _sequence2.Append(_tween1);
@@ -128,8 +128,8 @@ namespace Namespace
 
         private void Update()
         {
-            _tween1.SetTimeIIIIUUUHH(_time);
-            // _sequence1.SetTimeIIIUUUHH(_time);
+            // _tween1.SetTimeIIIIUUUHH(_time);
+            _sequence1.SetTimeIIIUUUHH(_time);
         }
     }
 }
