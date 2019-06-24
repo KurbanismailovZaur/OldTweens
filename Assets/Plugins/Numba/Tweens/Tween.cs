@@ -35,6 +35,14 @@ namespace Numba.Tweens
 
         internal override void SetTime(float time, bool normalized = false)
         {
+            if (Mathf.Approximately(FullDuration, 0f))
+                SetTimeWhenDurationIsZero(time, normalized);
+            else
+                SetTimeWhenDurationIsNotZero(time, normalized);
+        }
+
+        private void SetTimeWhenDurationIsZero(float time, bool normalized)
+        {
             if (!GetEvents(ref time, normalized, out Events events))
                 return;
 
@@ -51,20 +59,17 @@ namespace Numba.Tweens
             }
 
             var normalizedDuration = GetNormalizedDuration();
-            float wrappedTime;
 
             // Calling events between first (inclusive/exclusive) and last (exclusive).
             for (int i = startIndex; i < events.Count - 1; i++)
             {
-                // It is not requared to save intermediate current time values, 
-                // but may be useful when exception was throwed in tweaker.
-                _currentTime = events[i].time;
-
                 for (int j = 0; j < events[i].Count; j++)
                 {
-                    wrappedTime = WrapTime(events[i].time, normalizedDuration, events[i].phases[j]);
+                    // It is not requared to save intermediate current time values, 
+                    // but may be useful when exception was throwed in tweaker.
+                    _currentTime = events[i].time;
 
-                    Tweaker?.Apply(LoopTime(wrappedTime, _loopType), Formula);
+                    Tweaker?.Apply(LoopTime(events[i].time, _loopType), Formula);
                     events[i].Call(j);
                 }
             }
@@ -72,14 +77,59 @@ namespace Numba.Tweens
             // Save last current time value, again for exceptions in tweaker.
             _currentTime = events[events.Count - 1].time;
 
-            if (Mathf.Approximately(normalizedDuration, 0f))
-                wrappedTime = events[events.Count - 1].time;
-            else
-                wrappedTime = WrapTime(events[events.Count - 1].time, normalizedDuration);
-
             // Calling update or complete and loop complete events.
-            Tweaker?.Apply(LoopTime(wrappedTime, _loopType), Formula);
+            Tweaker?.Apply(LoopTime(events[events.Count - 1].time, _loopType), Formula);
             events[events.Count - 1].CallAll();
+        }
+
+        private void SetTimeWhenDurationIsNotZero(float time, bool normalized)
+        {
+            // if (!GetEvents(ref time, normalized, out Events events))
+            //     return;
+
+            // int startIndex = 0;
+            // var isForwardMove = _currentTime < time;
+
+            // // Calling start and loop start events.
+            // if (events[0].phases[0] == Phase.Started)
+            // {
+            //     // WrapTime not needed, because _current time will be equal to 0 or 1.
+            //     Tweaker?.Apply(LoopTime(events[0].time, _loopType), Formula);
+            //     events[0].CallAll();
+
+            //     startIndex = 1;
+            // }
+
+            // var normalizedDuration = GetNormalizedDuration();
+            // float wrappedTime;
+
+            // // Calling events between first (inclusive/exclusive) and last (exclusive).
+            // for (int i = startIndex; i < events.Count - 1; i++)
+            // {
+            //     for (int j = 0; j < events[i].Count; j++)
+            //     {
+            //         wrappedTime = WrapTime(events[i].time, normalizedDuration, events[i].phases[j], isForwardMove);
+
+            //         // It is not requared to save intermediate current time values, 
+            //         // but may be useful when exception was throwed in tweaker.
+            //         _currentTime = events[i].time;
+
+            //         Tweaker?.Apply(LoopTime(wrappedTime, _loopType), Formula);
+            //         events[i].Call(j);
+            //     }
+            // }
+
+            // // Save last current time value, again for exceptions in tweaker.
+            // _currentTime = events[events.Count - 1].time;
+
+            // if (Mathf.Approximately(normalizedDuration, 0f))
+            //     wrappedTime = events[events.Count - 1].time;
+            // else
+            //     wrappedTime = WrapTime(events[events.Count - 1].time, normalizedDuration);
+
+            // // Calling update or complete and loop complete events.
+            // Tweaker?.Apply(LoopTime(wrappedTime, _loopType), Formula);
+            // events[events.Count - 1].CallAll();
         }
 
         public void SetTimeIIIIUUUHH(float time) => SetTime(time);

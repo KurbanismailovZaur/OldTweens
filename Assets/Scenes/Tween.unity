@@ -343,8 +343,8 @@ MonoBehaviour:
   _tween3Count: 1
   _tween3LoopType: 0
   _tween3Duration: 1
-  _sequence1Count: 2
-  _sequence1LoopType: 2
+  _sequence1Count: 1
+  _sequence1LoopType: 0
   _sequence2Count: 1
   _sequence2LoopType: 0
   _sequence3Count: 1
