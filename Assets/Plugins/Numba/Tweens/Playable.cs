@@ -304,23 +304,6 @@ namespace Numba.Tweens
             return events;
         }
 
-        protected float WrapTime(float eventTime, float normalizedDuration, Phase phase)
-        {
-            float wrappedTime;
-
-            if (phase == Phase.LoopStarted)
-                wrappedTime = GetPlayingStartTime();
-            else
-            {
-                if (Mathf.Approximately(normalizedDuration, 0f))
-                    wrappedTime = eventTime;
-                else
-                    wrappedTime = WrapTime(eventTime, normalizedDuration);
-            }
-
-            return wrappedTime;
-        }
-
         protected float WrapTime(float time, float normalizedDuration) => WrapCeil(time, normalizedDuration) / normalizedDuration;
 
         private float WrapCeil(float value, float max)
