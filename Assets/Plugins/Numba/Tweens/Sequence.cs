@@ -39,13 +39,20 @@ namespace Numba.Tweens
                 return;
 
             int startIndex = 0;
-            var isForwardMove = _currentTime < time;
 
-            var childsPlayingStartTime = Mathf.Approximately(GetHierarchyPlayingDirection() * GetSelfPlayingDirection(), 1f) ? 0f : 1f;
+            // In mirror mode it is no matter from what end we start.
+            float childsPlayingStartTime = 0f;
 
-            // It is need to reverse playing time for childs when sequence go in backward direction.
-            if (!isForwardMove && _loopType != LoopType.Mirror)
-                childsPlayingStartTime = 1f - childsPlayingStartTime;
+            if (_loopType != LoopType.Mirror)
+            {
+                // If we move forward, then current time for childs must be 0 when started,
+                // otherwise (when go in backward direction) it must be 1.
+                childsPlayingStartTime = _currentTime < time ? 0f : 1f;
+
+                // When we use backward loop type, start time for childs must be reversed (even in difficult hierarchy).
+                if (_loopType == LoopType.Backward)
+                    childsPlayingStartTime = 1f - childsPlayingStartTime;
+            }
 
             // Calling start and loop start events.
             if (events[0].phases[0] == Phase.Started)
@@ -71,10 +78,8 @@ namespace Numba.Tweens
                     // otherwise we catch all playables in backward direction later.
                     if (events[i].phases[j] == Phase.LoopStarted)
                     {
-                        _currentTime = events[i].time;
-                        _currentTimePhase = Phase.LoopStarted;
-
-                        SetPlayablesStartTime(childsPlayingStartTime);
+                        if (_loopType != LoopType.Mirror)
+                            SetPlayablesStartTime(childsPlayingStartTime);
 
                         events[i].Call(j);
 
@@ -98,7 +103,6 @@ namespace Numba.Tweens
                     }
 
                     SetTimeOnPlayables(currentTime, nextTime, true);
-                    SetCurrentTime(events[i].time, events[i].phases[j]);
 
                     events[i].Call(j);
                 }
@@ -131,34 +135,7 @@ namespace Numba.Tweens
 
         private void HandleMirrorMode(ref float currentTime, float normalizedDuration, float nextTime, bool isForwardMove)
         {
-            if (Mathf.Approximately(normalizedDuration, 0f))
-            {
-                SetTimeOnPlayables(currentTime, nextTime, true);
 
-                // Here we can use 1f - GetPlayingStartTime() too, but it has less performance. 
-                currentTime = 1f - currentTime;
-
-                return;
-            }
-
-            var normalizedMirrorTime = normalizedDuration / 2f;
-            var period = Mathf.FloorToInt(nextTime / normalizedMirrorTime);
-
-            if (period % 2 == 0)
-                return;
-
-            var middle = period * normalizedMirrorTime;
-
-            if ((_currentTime < nextTime && (middle <= _currentTime || middle >= nextTime)) || (_currentTime > nextTime && (middle >= _currentTime || middle <= nextTime)))
-                return;
-
-            currentTime *= _duration;
-            // var middletTime = LoopTime(WrapTime(middle, normalizedDuration, Phase.LoopUpdated, isForwardMove), _loopType) * _duration;
-
-            // SetTimeOnPlayables(currentTime, middletTime, false);
-            SetCurrentTime(middle, Phase.LoopUpdated);
-
-            // currentTime = LoopTime(WrapTime(_currentTime, normalizedDuration, _currentTimePhase, isForwardMove), _loopType);
         }
 
         private void SetPlayablesStartTime(float time)
