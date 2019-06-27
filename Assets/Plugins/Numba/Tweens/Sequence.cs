@@ -95,14 +95,14 @@ namespace Numba.Tweens
                         (currentTime, nextTime) = (nextTime, currentTime);
                     else if (_loopType == LoopType.Mirror)
                     {
-                        if (_currentTime > time)
+                        if (currentTime > time)
                             (currentTime, nextTime) = (nextTime, currentTime);
 
-                        SetTimeOnPlayables(currentTime, nextTime, true);
+                        SetTimeOnPlayables(currentTime, nextTime, true, _currentTime < events[i].time ? 1 : -1);
                         (currentTime, nextTime) = (nextTime, currentTime);
                     }
 
-                    SetTimeOnPlayables(currentTime, nextTime, true);
+                    SetTimeOnPlayables(currentTime, nextTime, true, _currentTime < events[i].time ? 1 : -1);
 
                     events[i].Call(j);
                 }
@@ -115,14 +115,14 @@ namespace Numba.Tweens
                 (currentTime, nextTime) = (nextTime, currentTime);
             else if (_loopType == LoopType.Mirror)
             {
-                if (_currentTime > time)
+                if (currentTime > time)
                     (currentTime, nextTime) = (nextTime, currentTime);
 
-                SetTimeOnPlayables(currentTime, nextTime, true);
+                SetTimeOnPlayables(currentTime, nextTime, true, _currentTime < events[events.Count - 1].time ? 1 : -1);
                 (currentTime, nextTime) = (nextTime, currentTime);
             }
 
-            SetTimeOnPlayables(currentTime, nextTime, true);
+            SetTimeOnPlayables(currentTime, nextTime, true, _currentTime < events[events.Count - 1].time ? 1 : -1);
             SetCurrentTime(events[events.Count - 1].time, events[events.Count - 1].phases[events[events.Count - 1].phases.Count - 1]);
 
             events[events.Count - 1].CallAll();
@@ -130,12 +130,131 @@ namespace Numba.Tweens
 
         private void SetTimeWhenDurationIsNotZero(float time, bool normalized = false)
         {
+            if (!GetEvents(ref time, normalized, out Events events))
+                return;
 
+            int startIndex = 0;
+
+            // Self playing start time.
+            var playingStartTime = _currentTime < time ? 0f : 1f;
+
+            // In mirror mode it is no matter from what end we start childs.
+            float childsPlayingStartTime = 0f;
+
+            if (_loopType != LoopType.Mirror)
+            {
+                // If we move forward, then current time for childs must be 0 when started,
+                // otherwise (when go in backward direction) it must be 1.
+                childsPlayingStartTime = _currentTime < time ? 0f : 1f;
+
+                // When we use backward loop type, start time for childs must be reversed (even in difficult hierarchy).
+                if (_loopType == LoopType.Backward)
+                    childsPlayingStartTime = 1f - childsPlayingStartTime;
+            }
+
+            // Calling start and loop start events.
+            if (events[0].phases[0] == Phase.Started)
+            {
+                _currentTimePhase = Phase.LoopStarted;
+
+                SetPlayablesStartTime(childsPlayingStartTime);
+
+                // We need just call events, because no one playable can't be started in this time.
+                events[0].CallAll();
+                startIndex = 1;
+            }
+
+            var normalizedDuration = GetNormalizedDuration();
+            float currentTime;
+            float nextTime;
+
+            // Calling events between first (inclusive/exclusive) and last (exclusive).
+            for (int i = startIndex; i < events.Count - 1; i++)
+            {
+                for (int j = 0; j < events[i].Count; j++)
+                {
+                    // It is need to reset current time phase when we achieve loop started phase,
+                    // otherwise we catch all playables in backward direction later.
+                    if (events[i].phases[j] == Phase.LoopStarted)
+                    {
+                        SetCurrentTime(events[i].time, Phase.LoopStarted);
+
+                        if (_loopType != LoopType.Mirror)
+                            SetPlayablesStartTime(childsPlayingStartTime);
+
+                        events[i].Call(j);
+
+                        // It is no reason to handle playables because no one playable will played when
+                        // current time and next time have the same value.
+                        continue;
+                    }
+
+                    if (_loopType == LoopType.Mirror)
+                        HandleMirrorMode(normalizedDuration, events[i].time, playingStartTime);
+
+                    currentTime = _currentTimePhase == Phase.LoopStarted ? playingStartTime : WrapTime(_currentTime, normalizedDuration);
+                    currentTime = LoopTime(currentTime, _loopType) * _duration;
+
+                    nextTime = LoopTime(WrapTime(events[i].time, normalizedDuration) - playingStartTime, _loopType) * _duration;
+
+                    SetTimeOnPlayables(currentTime, nextTime, false, _currentTime < events[i].time ? 1 : -1);
+                    SetCurrentTime(events[i].time, events[i].phases[j]);
+
+                    events[i].Call(j);
+                }
+            }
+
+            if (_loopType == LoopType.Mirror)
+                HandleMirrorMode(normalizedDuration, events[events.Count - 1].time, playingStartTime);
+
+            currentTime = _currentTimePhase == Phase.LoopStarted ? playingStartTime : WrapTime(_currentTime, normalizedDuration);
+            currentTime = LoopTime(currentTime, _loopType) * _duration;
+
+            nextTime = WrapTime(events[events.Count - 1].time, normalizedDuration);
+
+            // when we stopped on loop completed event state it is need substract playing start time again,
+            // otherwise tweaker will take wrong parameter value.
+            if (events[events.Count - 1].Count == 1 && events[events.Count - 1].phases[0] == Phase.LoopCompleted)
+                nextTime -= playingStartTime;
+
+            nextTime = LoopTime(nextTime, _loopType) * _duration;
+
+            SetTimeOnPlayables(currentTime, nextTime, false, _currentTime < events[events.Count - 1].time ? 1 : -1);
+            SetCurrentTime(events[events.Count - 1].time, events[events.Count - 1].phases[events[events.Count - 1].Count - 1]);
+
+            events[events.Count - 1].CallAll();
         }
 
-        private void HandleMirrorMode(ref float currentTime, float normalizedDuration, float nextTime, bool isForwardMove)
+        private void HandleMirrorMode(float normalizedDuration, float eventTime, float playingStartTime)
         {
+            var normalizedMirrorTime = normalizedDuration / 2f;
+            var subPeriod = eventTime / normalizedMirrorTime;
 
+            float middle;
+
+            if (Mathf.FloorToInt(subPeriod) % 2 == 0)
+            {
+                var period = eventTime / normalizedDuration;
+                var flooredPeriod = Mathf.FloorToInt(period);
+                
+                if (Mathf.Approximately(period, flooredPeriod))
+                    middle = (_currentTime < eventTime ? subPeriod - 1f : subPeriod + 1f) * normalizedMirrorTime;
+                else
+                    middle = Mathf.Ceil(subPeriod) * normalizedMirrorTime;
+            }
+            else
+                middle = Mathf.Floor(subPeriod) * normalizedMirrorTime;
+
+            if ((_currentTime < eventTime && (middle <= _currentTime || middle >= eventTime)) || (_currentTime > eventTime && (middle >= _currentTime || middle <= eventTime)))
+                return;
+
+            float currentTime = _currentTimePhase == Phase.LoopStarted ? playingStartTime : WrapTime(_currentTime, normalizedDuration);
+            currentTime = LoopTime(currentTime, _loopType) * _duration;
+
+            var nextTime = LoopTime(WrapTime(middle, normalizedDuration), _loopType) * _duration;
+
+            SetTimeOnPlayables(currentTime, nextTime, false, _currentTime < middle ? 1 : -1);
+            SetCurrentTime(middle, Phase.LoopUpdated);
         }
 
         private void SetPlayablesStartTime(float time)
@@ -144,23 +263,30 @@ namespace Numba.Tweens
                 _playables[i].playable._currentTime = time;
         }
 
-        private void SetTimeOnPlayables(float startTime, float endTime, bool isZeroDuration)
+        private void SetTimeOnPlayables(float startTime, float endTime, bool isZeroDuration, int verticalSorting)
         {
-            var playables = GetPlayables(startTime, endTime, isZeroDuration);
+            var playables = GetPlayables(startTime, endTime, isZeroDuration, verticalSorting);
+
+            // This required for situations when zero duration playables placed at end (in both directions) of sequence,
+            // otherwise the SetTime method on playables will be not working.
+            if (startTime < endTime && Mathf.Approximately(endTime, FullDuration))
+                endTime += 1f;
+            else if (startTime > endTime && Mathf.Approximately(endTime, 0f))
+                endTime -= 1f;
 
             for (int k = 0; k < playables.Count; k++)
                 playables[k].playable.SetTime(endTime - playables[k].time);
         }
 
-        private List<(int order, float time, Playable playable)> GetPlayables(float startTime, float endTime, bool isZeroDuration)
+        private List<(int order, float time, Playable playable)> GetPlayables(float startTime, float endTime, bool isZeroDuration, int verticalSorting)
         {
             if (isZeroDuration)
-                return startTime < endTime ? GetForwardPlayables(0f, 0f) : GetBackwardPlayables(0f, 0f);
+                return startTime < endTime ? GetForwardPlayables(0f, 0f, verticalSorting) : GetBackwardPlayables(0f, 0f, verticalSorting);
             else
-                return startTime < endTime ? GetForwardPlayables(startTime, endTime) : GetBackwardPlayables(startTime, endTime);
+                return startTime < endTime ? GetForwardPlayables(startTime, endTime, verticalSorting) : GetBackwardPlayables(startTime, endTime, verticalSorting);
         }
 
-        private List<(int order, float time, Playable playable)> GetForwardPlayables(float startTime, float endTime)
+        private List<(int order, float time, Playable playable)> GetForwardPlayables(float startTime, float endTime, int verticalSorting)
         {
             var playables = new List<(int order, float time, Playable playable)>();
 
@@ -170,7 +296,7 @@ namespace Numba.Tweens
                     playables.Add(_playables[i]);
             }
 
-            playables.Sort((a, b) => a.order.CompareTo(b.order));
+            playables.Sort((a, b) => a.order.CompareTo(b.order) * verticalSorting);
 
             if (endTime == FullDuration)
             {
@@ -182,7 +308,7 @@ namespace Numba.Tweens
                         lastPlayables.Add(_playables[i]);
                 }
 
-                lastPlayables.Sort((a, b) => a.order.CompareTo(b.order));
+                lastPlayables.Sort((a, b) => a.order.CompareTo(b.order) * verticalSorting);
 
                 playables.AddRange(lastPlayables);
             }
@@ -190,7 +316,7 @@ namespace Numba.Tweens
             return playables;
         }
 
-        private List<(int order, float time, Playable playable)> GetBackwardPlayables(float startTime, float endTime)
+        private List<(int order, float time, Playable playable)> GetBackwardPlayables(float startTime, float endTime, int verticalSorting)
         {
             var playables = new List<(int order, float time, Playable playable)>();
 
@@ -200,7 +326,7 @@ namespace Numba.Tweens
                     playables.Add(_playables[i]);
             }
 
-            playables.Sort((a, b) => a.order.CompareTo(b.order) * -1);
+            playables.Sort((a, b) => a.order.CompareTo(b.order) * verticalSorting);
 
             // Add last playables which can't be started later.
             if (endTime == 0f)
@@ -213,7 +339,7 @@ namespace Numba.Tweens
                         lastPlayables.Add(_playables[i]);
                 }
 
-                lastPlayables.Sort((a, b) => a.order.CompareTo(b.order) * -1);
+                lastPlayables.Sort((a, b) => a.order.CompareTo(b.order) * verticalSorting);
 
                 playables.AddRange(lastPlayables);
             }
@@ -248,6 +374,9 @@ namespace Numba.Tweens
 
         public void Insert(float time, Playable playable, int order)
         {
+            if (playable == null)
+                throw new ArgumentNullException(nameof(playable));
+                
             if (playable == this)
                 throw new ArgumentException($"Sequence \"{Name}\" can't contain itself");
 

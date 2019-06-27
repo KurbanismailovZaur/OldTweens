@@ -95,14 +95,14 @@ namespace Namespace
 
         [Header("Common")]
         [SerializeField]
-        [Range(-1f, 8f)]
+        [Range(-1f, 16f)]
         private float _time;
 
         private IEnumerator Start()
         {
-            _tween1 = new Tween("Tween 1", new FloatTweaker(0f, 1f, x => {_cube1.SetPositionX(x); Debug.Log($"CUBE: {x}");}), _tween1Duration, Formula.ExpoInOut, _tween1Count, _tween1LoopType);
-            // _tween2 = new Tween("Tween 2", new FloatTweaker(1f, 2f, x => _cube2.SetPositionX(x)), _tween2Duration, Formula.ExpoInOut, _tween2Count, _tween2LoopType);
-            // _tween3 = new Tween("Tween 3", new FloatTweaker(0f, 2f, x => _cube3.SetPositionX(x)), _tween3Duration, Formula.ExpoInOut, _tween3Count, _tween3LoopType);
+            _tween1 = new Tween("Tween 1", new FloatTweaker(0f, 1f, x => {_cube1.SetPositionX(x); Debug.Log($"CUBE 1: {x}");}), _tween1Duration, Formula.ExpoInOut, _tween1Count, _tween1LoopType);
+            _tween2 = new Tween("Tween 2", new FloatTweaker(1f, 2f, x => {_cube2.SetPositionX(x); Debug.Log($"CUBE 2: {x}");}), _tween2Duration, Formula.ExpoInOut, _tween2Count, _tween2LoopType);
+            _tween3 = new Tween("Tween 3", new FloatTweaker(0f, 2f, x => {_cube3.SetPositionX(x); Debug.Log($"CUBE 3: {x}");}), _tween3Duration, Formula.ExpoInOut, _tween3Count, _tween3LoopType);
 
             // _tween1.Play();
 
@@ -110,13 +110,14 @@ namespace Namespace
             _sequence1.Append(_tween1);
 
             _sequence2 = new Sequence("Sequence 2", _sequence2Count, _sequence2LoopType);
-            _sequence2.Append(_sequence1);
+            _sequence2.Append(_tween2);
+            // _sequence2.Insert(0f, _tween2);
 
-            // _sequence3 = new Sequence("Sequence 3", _sequence3Count, _sequence3LoopType);
-            // _sequence3.Append(_tween3);
+            _sequence3 = new Sequence("Sequence 3", _sequence3Count, _sequence3LoopType);
+            _sequence3.Append(_tween3);
 
-            // _sequence1.Append(_sequence2);
-            // _sequence2.Append(_sequence3);
+            _sequence1.Insert(0f, _sequence2);
+            _sequence1.Insert(0f, _sequence3);
 
             // _tween1.Duration = 2f;
             // _tween1.LoopType = LoopType.Mirror;
@@ -129,7 +130,7 @@ namespace Namespace
         private void Update()
         {
             // _tween1.SetTimeIIIIUUUHH(_time);
-            _sequence2.SetTimeIIIUUUHH(_time);
+            _sequence1.SetTimeIIIUUUHH(_time);
         }
     }
 }
