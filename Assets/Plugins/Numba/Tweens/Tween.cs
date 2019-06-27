@@ -141,6 +141,8 @@ namespace Numba.Tweens
             events[events.Count - 1].CallAll();
         }
 
-        public void SetTimeIIIIUUUHH(float time) => SetTime(time);
+        protected internal override void ResetCurrentTime() => _currentTime = 0f;
+
+        protected internal override void ResetStateAccordingToTime(float time) => Tweaker?.Apply(LoopTime(time, _loopType), Formula);
     }
 }

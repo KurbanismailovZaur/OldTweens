@@ -329,8 +329,6 @@ namespace Numba.Tweens
             }
         }
 
-        // It is important to use 1 / count formula instead duration / FullDuration,
-        // otherwise in mirror mode we get wrong value.
         protected float GetNormalizedDuration() => Mathf.Approximately(_duration, 0f) ? 0f : 1f / Count;
 
         protected float GetSelfPlayingDirection() => _loopType == LoopType.Backward ? -1f : 1f;
@@ -343,11 +341,17 @@ namespace Numba.Tweens
             return _parent.GetSelfPlayingDirection() * _parent.GetHierarchyPlayingDirection();
         }
 
-        protected float GetPlayingStartTime() => Mathf.Approximately(GetHierarchyPlayingDirection(), 1f) ? 0f : 1f;
+        protected internal abstract void ResetCurrentTime();
+
+        protected internal abstract void ResetStateAccordingToTime(float time);
 
         #region Playing
+        protected virtual void CheckSpecificPlayExceptions() { }
+        
         public Playable Play()
         {
+            CheckSpecificPlayExceptions();
+
             if (IsPlaying || (_parent?.IsBusy ?? false)) throw new BusyException($"Playable with name \"{Name}\" already playing");
 
             if (IsStoped)
@@ -384,11 +388,12 @@ namespace Numba.Tweens
                 yield return null;
             }
 
-            SetTime(FullDuration);
+            // If we not add 1, then playables with zero duration will not called.
+            SetTime(FullDuration + 1f);
 
             _playState = PlayState.Stop;
 
-            _currentTime = 0f;
+            ResetCurrentTime();
         }
 
         public Playable Pause()
@@ -413,7 +418,7 @@ namespace Numba.Tweens
             CoroutineHelper.Instance.StopCoroutine(_playCoroutine);
             _playState = PlayState.Stop;
 
-            _currentTime = 0f;
+            ResetCurrentTime();
 
             Debug.Log("Stoped");
 

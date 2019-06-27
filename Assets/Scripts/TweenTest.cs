@@ -106,31 +106,28 @@ namespace Namespace
 
             // _tween1.Play();
 
-            _sequence1 = new Sequence("Sequence 1", _sequence1Count, _sequence1LoopType);
+            _sequence1 = new Sequence("Sequence 1", _sequence1Count, _sequence1LoopType, RewindType.Rewind);
             _sequence1.Append(_tween1);
+            _sequence1.Append(_tween2);
 
             _sequence2 = new Sequence("Sequence 2", _sequence2Count, _sequence2LoopType);
-            _sequence2.Append(_tween2);
-            // _sequence2.Insert(0f, _tween2);
+            _sequence2.Append(_tween3);
 
-            _sequence3 = new Sequence("Sequence 3", _sequence3Count, _sequence3LoopType);
-            _sequence3.Append(_tween3);
+            // _sequence3 = new Sequence("Sequence 3", _sequence3Count, _sequence3LoopType);
+            // _sequence3.Append(_tween3);
 
-            _sequence1.Insert(0f, _sequence2);
-            _sequence1.Insert(0f, _sequence3);
+            _sequence1.Append(_sequence2);
+            // _sequence1.Append(_sequence3);
 
-            // _tween1.Duration = 2f;
-            // _tween1.LoopType = LoopType.Mirror;
+            _tween1.Play();
+            _sequence1.Play();
+
+            yield return new WaitForSeconds(6f);
 
             // _sequence1.Play();
+            // _tween1.Play();
 
             yield return null;
-        }
-
-        private void Update()
-        {
-            // _tween1.SetTimeIIIIUUUHH(_time);
-            _sequence1.SetTimeIIIUUUHH(_time);
         }
     }
 }

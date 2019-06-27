@@ -334,19 +334,19 @@ MonoBehaviour:
   _cube1: {fileID: 1733659872}
   _cube2: {fileID: 1644802644}
   _cube3: {fileID: 424495664}
-  _tween1Count: 2
-  _tween1LoopType: 2
-  _tween1Duration: 0
+  _tween1Count: 1
+  _tween1LoopType: 0
+  _tween1Duration: 1
   _tween2Count: 1
   _tween2LoopType: 0
   _tween2Duration: 1
   _tween3Count: 1
-  _tween3LoopType: 0
+  _tween3LoopType: 1
   _tween3Duration: 1
-  _sequence1Count: 1
+  _sequence1Count: 2
   _sequence1LoopType: 0
   _sequence2Count: 1
-  _sequence2LoopType: 0
+  _sequence2LoopType: 1
   _sequence3Count: 1
   _sequence3LoopType: 0
   _time: -1

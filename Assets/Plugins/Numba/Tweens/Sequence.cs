@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Threading.Tasks;
 using System.Linq;
 using System;
+using Numba.Tweens.Exceptions;
 
 namespace Numba.Tweens
 {
@@ -15,9 +16,25 @@ namespace Numba.Tweens
 
         private int _nextOrder;
 
-        public Sequence(int count = 1, LoopType loopType = LoopType.Forward) : this(null, count, loopType) { }
+        private RewindType _rewindType;
 
-        public Sequence(string name, int count = 1, LoopType loopType = LoopType.Forward) : base(name, 0f, count, loopType) { }
+        public RewindType RewindType
+        {
+            get => _rewindType;
+            set
+            {
+                if (IsBusy) ThrowChangeBusyException("rewind type");
+
+                _rewindType = Enum.IsDefined(typeof(RewindType), value) ? value : throw new ArgumentException("Rewind type must be rewind or untouched");
+            }
+        }
+
+        public Sequence(int count = 1, LoopType loopType = LoopType.Forward, RewindType rewindType = RewindType.Rewind) : this(null, count, loopType, rewindType) { }
+
+        public Sequence(string name, int count = 1, LoopType loopType = LoopType.Forward, RewindType rewindType = RewindType.Rewind) : base(name, 0f, count, loopType)
+        {
+            _rewindType = rewindType;
+        }
 
         private void SetCurrentTime(float time, Phase phase)
         {
@@ -159,6 +176,12 @@ namespace Numba.Tweens
 
                 SetPlayablesStartTime(childsPlayingStartTime);
 
+                if (_rewindType == RewindType.Rewind)
+                {
+                    for (int k = 0; k < _playables.Count; k++)
+                        _playables[k].playable.ResetStateAccordingToTime(childsPlayingStartTime);
+                }
+
                 // We need just call events, because no one playable can't be started in this time.
                 events[0].CallAll();
                 startIndex = 1;
@@ -180,7 +203,15 @@ namespace Numba.Tweens
                         SetCurrentTime(events[i].time, Phase.LoopStarted);
 
                         if (_loopType != LoopType.Mirror)
+                        {
                             SetPlayablesStartTime(childsPlayingStartTime);
+
+                            if (_rewindType == RewindType.Rewind)
+                            {
+                                for (int k = 0; k < _playables.Count; k++)
+                                    _playables[k].playable.ResetStateAccordingToTime(childsPlayingStartTime);
+                            }
+                        }
 
                         events[i].Call(j);
 
@@ -236,7 +267,7 @@ namespace Numba.Tweens
             {
                 var period = eventTime / normalizedDuration;
                 var flooredPeriod = Mathf.FloorToInt(period);
-                
+
                 if (Mathf.Approximately(period, flooredPeriod))
                     middle = (_currentTime < eventTime ? subPeriod - 1f : subPeriod + 1f) * normalizedMirrorTime;
                 else
@@ -347,8 +378,6 @@ namespace Numba.Tweens
             return playables;
         }
 
-        public void SetTimeIIIUUUHH(float time) => SetTime(time);
-
         private bool CheckOnCyclicReference(Sequence sequence)
         {
             if (sequence == this)
@@ -376,7 +405,7 @@ namespace Numba.Tweens
         {
             if (playable == null)
                 throw new ArgumentNullException(nameof(playable));
-                
+
             if (playable == this)
                 throw new ArgumentException($"Sequence \"{Name}\" can't contain itself");
 
@@ -418,6 +447,34 @@ namespace Numba.Tweens
         {
             CalculateDuration();
             CalculateFullDuration();
+        }
+
+        protected internal override void ResetCurrentTime()
+        {
+            for (int i = 0; i < _playables.Count; i++)
+                _playables[i].playable.ResetCurrentTime();
+
+            _currentTime = 0f;
+        }
+
+        protected internal override void ResetStateAccordingToTime(float time)
+        {
+            if (_loopType == LoopType.Mirror)
+                time = 0f;
+            else if (_loopType == LoopType.Backward)
+                time = 1f - time;
+
+            for (int i = 0; i < _playables.Count; i++)
+                _playables[i].playable.ResetStateAccordingToTime(time);
+        }
+
+        protected override void CheckSpecificPlayExceptions()
+        {
+            for (int i = 0; i < _playables.Count; i++)
+            {
+                if (_playables[i].playable.IsBusy)
+                    throw new BusyException($"Child playable with name \"{_playables[i].playable.Name}\" already playing");
+            }
         }
 
         #region Event handlers
