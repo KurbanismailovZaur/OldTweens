@@ -100,33 +100,17 @@ namespace Namespace
 
         private IEnumerator Start()
         {
-            _tween1 = new Tween("Tween 1", new FloatTweaker(0f, 1f, x => {_cube1.SetPositionX(x); Debug.Log($"CUBE 1: {x}");}), _tween1Duration, Formula.ExpoInOut, _tween1Count, _tween1LoopType);
-            _tween2 = new Tween("Tween 2", new FloatTweaker(1f, 2f, x => {_cube2.SetPositionX(x); Debug.Log($"CUBE 2: {x}");}), _tween2Duration, Formula.ExpoInOut, _tween2Count, _tween2LoopType);
-            _tween3 = new Tween("Tween 3", new FloatTweaker(0f, 2f, x => {_cube3.SetPositionX(x); Debug.Log($"CUBE 3: {x}");}), _tween3Duration, Formula.ExpoInOut, _tween3Count, _tween3LoopType);
+            var tween = new Tween("Tween 1", new FloatTweaker(0f, 1f, x => _cube1.SetPositionX(x)), 1f, Formula.BounceIn, 2, LoopType.Backward);
 
-            // _tween1.Play();
+            var sequence1 = new Sequence("Sequence 1");
+            sequence1.Append(tween);
 
-            _sequence1 = new Sequence("Sequence 1", _sequence1Count, _sequence1LoopType, RewindType.Rewind);
-            _sequence1.Append(_tween1);
-            _sequence1.Append(_tween2);
+            var sequence2 = new Sequence("Sequence 2", 1, LoopType.Backward);
+            sequence2.Append(sequence1);
 
-            _sequence2 = new Sequence("Sequence 2", _sequence2Count, _sequence2LoopType);
-            _sequence2.Append(_tween3);
-
-            // _sequence3 = new Sequence("Sequence 3", _sequence3Count, _sequence3LoopType);
-            // _sequence3.Append(_tween3);
-
-            _sequence1.Append(_sequence2);
-            // _sequence1.Append(_sequence3);
-
-            _tween1.Play();
-            _sequence1.Play();
-
-            yield return new WaitForSeconds(6f);
-
-            // _sequence1.Play();
-            // _tween1.Play();
-
+            yield return sequence1.Play();
+            sequence2.Play();
+            
             yield return null;
         }
     }

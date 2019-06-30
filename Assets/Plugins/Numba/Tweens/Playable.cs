@@ -1,8 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Threading.Tasks;
-using System.Linq;
 using System;
 using Numba.Tweens.Exceptions;
 
@@ -181,14 +179,14 @@ namespace Numba.Tweens
 
         private int GetLoopTypeDurationMultiplier(LoopType loopType) => loopType == LoopType.Mirror ? 2 : 1;
 
-        protected void NormalizeTime(ref float time)
+        private void NormalizeTime(ref float time)
         {
             var normalizedTime = time / FullDuration;
 
             time = float.IsNaN(normalizedTime) ? 0f : Mathf.Clamp01(normalizedTime);
         }
 
-        internal abstract void SetTime(float time, bool normalized = false);
+        protected internal abstract void SetTime(float time, bool normalized = false);
 
         protected bool GetEvents(ref float time, bool normalized, out Events events)
         {
@@ -200,7 +198,7 @@ namespace Numba.Tweens
             return events != null;
         }
 
-        protected Events GetTimeShiftEvents(float time)
+        private Events GetTimeShiftEvents(float time)
         {
             // Exit for both situations (when FullDuration equal or not to 0).
             if (time == _currentTime) return null;
@@ -333,7 +331,7 @@ namespace Numba.Tweens
 
         protected float GetSelfPlayingDirection() => _loopType == LoopType.Backward ? -1f : 1f;
 
-        protected float GetHierarchyPlayingDirection()
+        private float GetHierarchyPlayingDirection()
         {
             if (_parent == null)
                 return 1f;
@@ -347,7 +345,7 @@ namespace Numba.Tweens
 
         #region Playing
         protected virtual void CheckSpecificPlayExceptions() { }
-        
+
         public Playable Play()
         {
             CheckSpecificPlayExceptions();

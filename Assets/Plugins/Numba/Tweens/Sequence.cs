@@ -1,8 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using System.Threading.Tasks;
-using System.Linq;
 using System;
 using Numba.Tweens.Exceptions;
 
@@ -29,9 +26,9 @@ namespace Numba.Tweens
             }
         }
 
-        public Sequence(int count = 1, LoopType loopType = LoopType.Forward, RewindType rewindType = RewindType.Rewind) : this(null, count, loopType, rewindType) { }
+        public Sequence(int count = 1, LoopType loopType = LoopType.Forward, RewindType rewindType = RewindType.Restart) : this(null, count, loopType, rewindType) { }
 
-        public Sequence(string name, int count = 1, LoopType loopType = LoopType.Forward, RewindType rewindType = RewindType.Rewind) : base(name, 0f, count, loopType)
+        public Sequence(string name, int count = 1, LoopType loopType = LoopType.Forward, RewindType rewindType = RewindType.Restart) : base(name, 0f, count, loopType)
         {
             _rewindType = rewindType;
         }
@@ -42,7 +39,7 @@ namespace Numba.Tweens
             _currentTimePhase = phase;
         }
 
-        internal override void SetTime(float time, bool normalized = false)
+        protected internal override void SetTime(float time, bool normalized = false)
         {
             if (Mathf.Approximately(FullDuration, 0f))
                 SetTimeWhenDurationIsZero(time, normalized);
@@ -176,7 +173,7 @@ namespace Numba.Tweens
 
                 SetPlayablesStartTime(childsPlayingStartTime);
 
-                if (_rewindType == RewindType.Rewind)
+                if (_rewindType == RewindType.Restart)
                 {
                     for (int k = 0; k < _playables.Count; k++)
                         _playables[k].playable.ResetStateAccordingToTime(childsPlayingStartTime);
@@ -206,7 +203,7 @@ namespace Numba.Tweens
                         {
                             SetPlayablesStartTime(childsPlayingStartTime);
 
-                            if (_rewindType == RewindType.Rewind)
+                            if (_rewindType == RewindType.Restart)
                             {
                                 for (int k = 0; k < _playables.Count; k++)
                                     _playables[k].playable.ResetStateAccordingToTime(childsPlayingStartTime);
@@ -409,6 +406,9 @@ namespace Numba.Tweens
             if (playable == this)
                 throw new ArgumentException($"Sequence \"{Name}\" can't contain itself");
 
+            if (playable._parent != null)
+                throw new ArgumentException($"Playable with name \"{playable.Name}\" already attach to other sequence with name {playable.Parent.Name}");
+
             if (playable is Sequence sequence && CheckOnCyclicReference(sequence))
                 throw new ArgumentException($"Cyclic references detected. Sequence \"{playable.Name}\" or its child sequences (in whole hierarchy) already referenced to sequence \"{Name}\"");
 
@@ -417,6 +417,7 @@ namespace Numba.Tweens
 
             order = Mathf.Max(order, 0);
 
+            // Increment all playables orders which greater or equal to current.
             var playables = _playables.FindAll(p => p.order >= order);
 
             for (int i = 0; i < playables.Count; i++)
@@ -476,6 +477,12 @@ namespace Numba.Tweens
                     throw new BusyException($"Child playable with name \"{_playables[i].playable.Name}\" already playing");
             }
         }
+
+        public new Sequence Play() => (Sequence)base.Play();
+
+        public new Sequence Pause() => (Sequence)base.Pause();
+
+        public new Sequence Stop() => (Sequence)base.Stop();
 
         #region Event handlers
         private void Playable_FullDurationChanged(Playable playable) => CalculateAllDurations();

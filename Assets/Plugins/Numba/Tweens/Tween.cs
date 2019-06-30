@@ -1,9 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using System.Threading.Tasks;
-using System.Linq;
-using System;
+﻿using UnityEngine;
 
 namespace Numba.Tweens
 {
@@ -33,7 +28,7 @@ namespace Numba.Tweens
             Formula = formula;
         }
 
-        internal override void SetTime(float time, bool normalized = false)
+        protected internal override void SetTime(float time, bool normalized = false)
         {
             if (Mathf.Approximately(FullDuration, 0f))
                 SetTimeWhenDurationIsZero(time, normalized);
@@ -144,5 +139,11 @@ namespace Numba.Tweens
         protected internal override void ResetCurrentTime() => _currentTime = 0f;
 
         protected internal override void ResetStateAccordingToTime(float time) => Tweaker?.Apply(LoopTime(time, _loopType), Formula);
+
+        public new Tween Play() => (Tween)base.Play();
+
+        public new Tween Pause() => (Tween)base.Pause();
+
+        public new Tween Stop() => (Tween)base.Stop();
     }
 }

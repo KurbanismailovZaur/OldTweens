@@ -9,7 +9,7 @@ namespace Numba.Tweens
 {
 	public enum RewindType 
 	{
-		Rewind,
+		Restart,
 		Untouched
 	}
 }
