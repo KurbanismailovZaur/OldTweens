@@ -9,8 +9,8 @@ namespace Numba.Tweens.Tweakers
 {
     public class Vector2Tweaker : Tweaker<Vector2>
     {
-        public Vector2Tweaker(Vector2 from, Vector2 to, Action<Vector2> action) : base(from, to, action) { }
+        public Vector2Tweaker(Func<Vector2> from, Func<Vector2> to, Action<Vector2> action) : base(from, to, action) { }
 
-        public override Vector2 Evaluate(float value, Formula formula) => formula?.Calculate(From, To, value) ?? Formula.Linear.Calculate(From, To, value);
+        public override Vector2 Evaluate(float value, Formula formula) => formula?.Calculate(From(), To(), value) ?? Formula.Linear.Calculate(From(), To(), value);
     }
 }

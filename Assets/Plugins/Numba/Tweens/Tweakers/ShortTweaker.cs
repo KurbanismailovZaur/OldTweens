@@ -9,8 +9,8 @@ namespace Numba.Tweens.Tweakers
 {
     public class ShortTweaker : Tweaker<short>
     {
-        public ShortTweaker(short from, short to, Action<short> action) : base(from, to, action) { }
+        public ShortTweaker(Func<short> from, Func<short> to, Action<short> action) : base(from, to, action) { }
 
-        public override short Evaluate(float value, Formula formula) => formula?.Calculate(From, To, value) ?? Formula.Linear.Calculate(From, To, value);
+        public override short Evaluate(float value, Formula formula) => formula?.Calculate(From(), To(), value) ?? Formula.Linear.Calculate(From(), To(), value);
     }
 }

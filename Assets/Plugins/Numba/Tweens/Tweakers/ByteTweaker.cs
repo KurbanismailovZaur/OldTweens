@@ -9,8 +9,8 @@ namespace Numba.Tweens.Tweakers
 {
     public class ByteTweaker : Tweaker<byte>
     {
-        public ByteTweaker(byte from, byte to, Action<byte> action) : base(from, to, action) { }
+        public ByteTweaker(Func<byte> from, Func<byte> to, Action<byte> action) : base(from, to, action) { }
 
-        public override byte Evaluate(float value, Formula formula) => formula?.Calculate(From, To, value) ?? Formula.Linear.Calculate(From, To, value);
+        public override byte Evaluate(float value, Formula formula) => formula?.Calculate(From(), To(), value) ?? Formula.Linear.Calculate(From(), To(), value);
     }
 }

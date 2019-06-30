@@ -9,8 +9,8 @@ namespace Numba.Tweens.Tweakers
 {
     public class CharTweaker : Tweaker<char>
     {
-        public CharTweaker(char from, char to, Action<char> action) : base(from, to, action) { }
+        public CharTweaker(Func<char> from, Func<char> to, Action<char> action) : base(from, to, action) { }
 
-        public override char Evaluate(float value, Formula formula) => formula?.Calculate(From, To, value) ?? Formula.Linear.Calculate(From, To, value);
+        public override char Evaluate(float value, Formula formula) => formula?.Calculate(From(), To(), value) ?? Formula.Linear.Calculate(From(), To(), value);
     }
 }

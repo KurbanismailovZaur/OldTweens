@@ -36,7 +36,7 @@ namespace Namespace
         private LoopType _tween1LoopType;
 
         [SerializeField]
-        [Range(0f, 1f)]
+        [Range(0f, 8f)]
         private float _tween1Duration = 1f;
 
         [Header("Tween 2")]
@@ -100,17 +100,9 @@ namespace Namespace
 
         private IEnumerator Start()
         {
-            var tween = new Tween("Tween 1", new FloatTweaker(0f, 1f, x => _cube1.SetPositionX(x)), 1f, Formula.BounceIn, 2, LoopType.Backward);
+            var tween = new Tween("Tween 1", new Vector3Tweaker(() => _cube1.position, () => _cube3.position, p => _cube2.position = p), _tween1Duration, Formula.ExpoInOut, _tween1Count, _tween1LoopType);
+            tween.Play();
 
-            var sequence1 = new Sequence("Sequence 1");
-            sequence1.Append(tween);
-
-            var sequence2 = new Sequence("Sequence 2", 1, LoopType.Backward);
-            sequence2.Append(sequence1);
-
-            yield return sequence1.Play();
-            sequence2.Play();
-            
             yield return null;
         }
     }

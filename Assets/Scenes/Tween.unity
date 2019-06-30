@@ -336,7 +336,7 @@ MonoBehaviour:
   _cube3: {fileID: 424495664}
   _tween1Count: 1
   _tween1LoopType: 0
-  _tween1Duration: 1
+  _tween1Duration: 8
   _tween2Count: 1
   _tween2LoopType: 0
   _tween2Duration: 1
@@ -623,7 +623,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1733659868}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 10}
+  m_LocalPosition: {x: -1.852, y: 0, z: 8.576}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}

@@ -172,37 +172,37 @@ namespace Namespace
 
         private void Start()
         {
-            _tweaker1 = new FloatTweaker(0f, 1f, (f) => _target1.SetPositionX(f));
-            _tweaker2 = new FloatTweaker(0f, 1f, (f) => _target2.SetPositionX(f));
-            _tweaker3 = new FloatTweaker(0f, 1f, (f) => _target3.SetPositionX(f));
-            _tweaker4 = new FloatTweaker(0f, 1f, (f) => _target4.SetPositionX(f));
-            _tweaker5 = new FloatTweaker(0f, 1f, (f) => _target5.SetPositionX(f));
-            _tweaker6 = new FloatTweaker(0f, 1f, (f) => _target6.SetPositionX(f));
-            _tweaker7 = new FloatTweaker(0f, 1f, (f) => _target7.SetPositionX(f));
-            _tweaker8 = new FloatTweaker(0f, 1f, (f) => _target8.SetPositionX(f));
-            _tweaker9 = new FloatTweaker(0f, 1f, (f) => _target9.SetPositionX(f));
-            _tweaker10 = new FloatTweaker(0f, 1f, (f) => _target10.SetPositionX(f));
-            _tweaker11 = new FloatTweaker(0f, 1f, (f) => _target11.SetPositionX(f));
-            _tweaker12 = new FloatTweaker(0f, 1f, (f) => _target12.SetPositionX(f));
-            _tweaker13 = new FloatTweaker(0f, 1f, (f) => _target13.SetPositionX(f));
-            _tweaker14 = new FloatTweaker(0f, 1f, (f) => _target14.SetPositionX(f));
-            _tweaker15 = new FloatTweaker(0f, 1f, (f) => _target15.SetPositionX(f));
-            _tweaker16 = new FloatTweaker(0f, 1f, (f) => _target16.SetPositionX(f));
-            _tweaker17 = new FloatTweaker(0f, 1f, (f) => _target17.SetPositionX(f));
-            _tweaker18 = new FloatTweaker(0f, 1f, (f) => _target18.SetPositionX(f));
-            _tweaker19 = new FloatTweaker(0f, 1f, (f) => _target19.SetPositionX(f));
-            _tweaker20 = new FloatTweaker(0f, 1f, (f) => _target20.SetPositionX(f));
-            _tweaker21 = new FloatTweaker(0f, 1f, (f) => _target21.SetPositionX(f));
-            _tweaker22 = new FloatTweaker(0f, 1f, (f) => _target22.SetPositionX(f));
-            _tweaker23 = new FloatTweaker(0f, 1f, (f) => _target23.SetPositionX(f));
-            _tweaker24 = new FloatTweaker(0f, 1f, (f) => _target24.SetPositionX(f));
-            _tweaker25 = new FloatTweaker(0f, 1f, (f) => _target25.SetPositionX(f));
-            _tweaker26 = new FloatTweaker(0f, 1f, (f) => _target26.SetPositionX(f));
-            _tweaker27 = new FloatTweaker(0f, 1f, (f) => _target27.SetPositionX(f));
-            _tweaker28 = new FloatTweaker(0f, 1f, (f) => _target28.SetPositionX(f));
-            _tweaker29 = new FloatTweaker(0f, 1f, (f) => _target29.SetPositionX(f));
-            _tweaker30 = new FloatTweaker(0f, 1f, (f) => _target30.SetPositionX(f));
-            _tweaker31 = new FloatTweaker(0f, 1f, (f) => _target31.SetPositionX(f));
+            _tweaker1 = new FloatTweaker(() => 0f, () => 1f, (f) => _target1.SetPositionX(f));
+            _tweaker2 = new FloatTweaker(() => 0f, () => 1f, (f) => _target2.SetPositionX(f));
+            _tweaker3 = new FloatTweaker(() => 0f, () => 1f, (f) => _target3.SetPositionX(f));
+            _tweaker4 = new FloatTweaker(() => 0f, () => 1f, (f) => _target4.SetPositionX(f));
+            _tweaker5 = new FloatTweaker(() => 0f, () => 1f, (f) => _target5.SetPositionX(f));
+            _tweaker6 = new FloatTweaker(() => 0f, () => 1f, (f) => _target6.SetPositionX(f));
+            _tweaker7 = new FloatTweaker(() => 0f, () => 1f, (f) => _target7.SetPositionX(f));
+            _tweaker8 = new FloatTweaker(() => 0f, () => 1f, (f) => _target8.SetPositionX(f));
+            _tweaker9 = new FloatTweaker(() => 0f, () => 1f, (f) => _target9.SetPositionX(f));
+            _tweaker10 = new FloatTweaker(() => 0f, () => 1f, (f) => _target10.SetPositionX(f));
+            _tweaker11 = new FloatTweaker(() => 0f, () => 1f, (f) => _target11.SetPositionX(f));
+            _tweaker12 = new FloatTweaker(() => 0f, () => 1f, (f) => _target12.SetPositionX(f));
+            _tweaker13 = new FloatTweaker(() => 0f, () => 1f, (f) => _target13.SetPositionX(f));
+            _tweaker14 = new FloatTweaker(() => 0f, () => 1f, (f) => _target14.SetPositionX(f));
+            _tweaker15 = new FloatTweaker(() => 0f, () => 1f, (f) => _target15.SetPositionX(f));
+            _tweaker16 = new FloatTweaker(() => 0f, () => 1f, (f) => _target16.SetPositionX(f));
+            _tweaker17 = new FloatTweaker(() => 0f, () => 1f, (f) => _target17.SetPositionX(f));
+            _tweaker18 = new FloatTweaker(() => 0f, () => 1f, (f) => _target18.SetPositionX(f));
+            _tweaker19 = new FloatTweaker(() => 0f, () => 1f, (f) => _target19.SetPositionX(f));
+            _tweaker20 = new FloatTweaker(() => 0f, () => 1f, (f) => _target20.SetPositionX(f));
+            _tweaker21 = new FloatTweaker(() => 0f, () => 1f, (f) => _target21.SetPositionX(f));
+            _tweaker22 = new FloatTweaker(() => 0f, () => 1f, (f) => _target22.SetPositionX(f));
+            _tweaker23 = new FloatTweaker(() => 0f, () => 1f, (f) => _target23.SetPositionX(f));
+            _tweaker24 = new FloatTweaker(() => 0f, () => 1f, (f) => _target24.SetPositionX(f));
+            _tweaker25 = new FloatTweaker(() => 0f, () => 1f, (f) => _target25.SetPositionX(f));
+            _tweaker26 = new FloatTweaker(() => 0f, () => 1f, (f) => _target26.SetPositionX(f));
+            _tweaker27 = new FloatTweaker(() => 0f, () => 1f, (f) => _target27.SetPositionX(f));
+            _tweaker28 = new FloatTweaker(() => 0f, () => 1f, (f) => _target28.SetPositionX(f));
+            _tweaker29 = new FloatTweaker(() => 0f, () => 1f, (f) => _target29.SetPositionX(f));
+            _tweaker30 = new FloatTweaker(() => 0f, () => 1f, (f) => _target30.SetPositionX(f));
+            _tweaker31 = new FloatTweaker(() => 0f, () => 1f, (f) => _target31.SetPositionX(f));
         }
 
         private void Update()

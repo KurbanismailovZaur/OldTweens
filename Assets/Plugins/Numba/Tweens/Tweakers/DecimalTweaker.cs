@@ -9,8 +9,8 @@ namespace Numba.Tweens.Tweakers
 {
     public class DecimalTweaker : Tweaker<decimal>
     {
-        public DecimalTweaker(decimal from, decimal to, Action<decimal> action) : base(from, to, action) { }
+        public DecimalTweaker(Func<decimal> from, Func<decimal> to, Action<decimal> action) : base(from, to, action) { }
 
-        public override decimal Evaluate(float value, Formula formula) => formula?.Calculate(From, To, value) ?? Formula.Linear.Calculate(From, To, value);
+        public override decimal Evaluate(float value, Formula formula) => formula?.Calculate(From(), To(), value) ?? Formula.Linear.Calculate(From(), To(), value);
     }
 }
