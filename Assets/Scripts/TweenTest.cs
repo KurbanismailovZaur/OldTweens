@@ -29,7 +29,7 @@ namespace Namespace
 
         [Header("Tween 1")]
         [SerializeField]
-        [Range(1, 4)]
+        [Range(0, 4)]
         private int _tween1Count = 1;
 
         [SerializeField]
@@ -100,10 +100,23 @@ namespace Namespace
 
         private IEnumerator Start()
         {
-            var tween = new Tween("Tween 1", new Vector3Tweaker(() => _cube1.position, () => _cube3.position, p => _cube2.position = p), _tween1Duration, Formula.ExpoInOut, _tween1Count, _tween1LoopType);
-            tween.Play();
+            _tween1 = new Tween("Tween 1", new FloatTweaker(() => 0f, () => 1f, x => _cube1.SetPositionX(x)), _tween1Duration, Formula.ExpoInOut, _tween1Count, _tween1LoopType);
+            // _tween2 = new Tween("Tween 2", new FloatTweaker(() => 0f, () => 1f, x => _cube2.SetPositionX(x)), _tween2Duration, Formula.ExpoInOut, _tween2Count, _tween2LoopType);
+            // _tween3 = new Tween("Tween 3", new FloatTweaker(() => 0f, () => 1f, x => _cube3.SetPositionX(x)), _tween3Duration, Formula.ExpoInOut, _tween3Count, _tween3LoopType);
+
+            // _sequence1 = new Sequence("Sequence 1", _sequence1Count, _sequence1LoopType);
+            // _sequence1.Append(_tween1);
+            // _sequence1.Append(_tween2);
+            // _sequence1.Append(_tween3);
+
+            // _sequence1.Play();
 
             yield return null;
+        }
+
+        private void Update()
+        {
+            _tween1.SetTimeAAAAAAA(_time);
         }
     }
 }

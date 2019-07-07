@@ -9,8 +9,8 @@ namespace Numba.Tweens
 {
 	public enum LoopType 
 	{
-		Forward,
-		Backward,
-		Mirror
+		Repeat,
+		Mirror,
+		Increment
 	}
 }

@@ -108,7 +108,7 @@ namespace Numba.Tweens
             {
                 if (IsBusy) ThrowChangeBusyException("count");
 
-                _count = Mathf.Max(value, 1);
+                _count = Mathf.Max(value, 0);
                 CalculateFullDuration();
             }
         }
@@ -161,9 +161,9 @@ namespace Numba.Tweens
         public override bool keepWaiting => !IsStoped;
         #endregion
 
-        public Playable(float duration, int count = 1, LoopType loopType = LoopType.Forward) : this(null, duration, count, loopType) { }
+        public Playable(float duration, int count = 1, LoopType loopType = LoopType.Repeat) : this(null, duration, count, loopType) { }
 
-        public Playable(string name, float duration, int count = 1, LoopType loopType = LoopType.Forward)
+        public Playable(string name, float duration, int count = 1, LoopType loopType = LoopType.Repeat)
         {
             Name = name ?? "None";
             _duration = Mathf.Max(duration, 0f);
@@ -190,6 +190,12 @@ namespace Numba.Tweens
 
         protected bool GetEvents(ref float time, bool normalized, out Events events)
         {
+            if (_count == 0)
+            {
+                events = null;
+                return false;
+            }
+
             if (!normalized)
                 NormalizeTime(ref time);
 
@@ -316,10 +322,8 @@ namespace Numba.Tweens
         {
             switch (loopType)
             {
-                case LoopType.Forward:
+                case LoopType.Repeat:
                     return time;
-                case LoopType.Backward:
-                    return 1f - time;
                 case LoopType.Mirror:
                     return time <= 0.5f ? time * 2f : (1f - time) * 2f;
                 default:
@@ -328,16 +332,6 @@ namespace Numba.Tweens
         }
 
         protected float GetNormalizedDuration() => Mathf.Approximately(_duration, 0f) ? 0f : 1f / Count;
-
-        protected float GetSelfPlayingDirection() => _loopType == LoopType.Backward ? -1f : 1f;
-
-        private float GetHierarchyPlayingDirection()
-        {
-            if (_parent == null)
-                return 1f;
-
-            return _parent.GetSelfPlayingDirection() * _parent.GetHierarchyPlayingDirection();
-        }
 
         protected internal abstract void ResetCurrentTime();
 

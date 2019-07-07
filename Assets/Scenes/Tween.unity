@@ -205,7 +205,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 424495660}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 8}
+  m_LocalPosition: {x: 0, y: 0, z: 6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -334,17 +334,17 @@ MonoBehaviour:
   _cube1: {fileID: 1733659872}
   _cube2: {fileID: 1644802644}
   _cube3: {fileID: 424495664}
-  _tween1Count: 1
-  _tween1LoopType: 0
-  _tween1Duration: 8
+  _tween1Count: 4
+  _tween1LoopType: 2
+  _tween1Duration: 1
   _tween2Count: 1
   _tween2LoopType: 0
   _tween2Duration: 1
   _tween3Count: 1
-  _tween3LoopType: 1
-  _tween3Duration: 1
-  _sequence1Count: 2
-  _sequence1LoopType: 2
+  _tween3LoopType: 0
+  _tween3Duration: 0
+  _sequence1Count: 1
+  _sequence1LoopType: 1
   _sequence2Count: 1
   _sequence2LoopType: 0
   _sequence3Count: 1
@@ -532,7 +532,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1644802640}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1, y: 0, z: 9}
+  m_LocalPosition: {x: 1, y: 0, z: 8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -623,7 +623,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1733659868}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.852, y: 0, z: 8.576}
+  m_LocalPosition: {x: 0, y: 0, z: 9.819}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}

@@ -20,9 +20,9 @@ namespace Numba.Tweens
             }
         }
 
-        public Tween(Tweaker tweaker, float duration, Formula formula = null, int count = 1, LoopType loopType = LoopType.Forward) : this(null, tweaker, duration, formula, count, loopType) { }
+        public Tween(Tweaker tweaker, float duration, Formula formula = null, int count = 1, LoopType loopType = LoopType.Repeat) : this(null, tweaker, duration, formula, count, loopType) { }
 
-        public Tween(string name, Tweaker tweaker, float duration, Formula formula = null, int count = 1, LoopType loopType = LoopType.Forward) : base(name, duration, count, loopType)
+        public Tween(string name, Tweaker tweaker, float duration, Formula formula = null, int count = 1, LoopType loopType = LoopType.Repeat) : base(name, duration, count, loopType)
         {
             Tweaker = tweaker;
             Formula = formula;
@@ -35,6 +35,8 @@ namespace Numba.Tweens
             else
                 SetTimeWhenDurationIsNotZero(time, normalized);
         }
+
+        public void SetTimeAAAAAAA(float time) => SetTime(time);
 
         private void SetTimeWhenDurationIsZero(float time, bool normalized)
         {

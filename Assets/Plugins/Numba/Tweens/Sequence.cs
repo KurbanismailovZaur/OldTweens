@@ -26,9 +26,9 @@ namespace Numba.Tweens
             }
         }
 
-        public Sequence(int count = 1, LoopType loopType = LoopType.Forward, RewindType rewindType = RewindType.Restart) : this(null, count, loopType, rewindType) { }
+        public Sequence(int count = 1, LoopType loopType = LoopType.Repeat, RewindType rewindType = RewindType.Restart) : this(null, count, loopType, rewindType) { }
 
-        public Sequence(string name, int count = 1, LoopType loopType = LoopType.Forward, RewindType rewindType = RewindType.Restart) : base(name, 0f, count, loopType)
+        public Sequence(string name, int count = 1, LoopType loopType = LoopType.Repeat, RewindType rewindType = RewindType.Restart) : base(name, 0f, count, loopType)
         {
             _rewindType = rewindType;
         }
@@ -62,10 +62,6 @@ namespace Numba.Tweens
                 // If we move forward, then current time for childs must be 0 when started,
                 // otherwise (when go in backward direction) it must be 1.
                 childsPlayingStartTime = _currentTime < time ? 0f : 1f;
-
-                // When we use backward loop type, start time for childs must be reversed (even in difficult hierarchy).
-                if (_loopType == LoopType.Backward)
-                    childsPlayingStartTime = 1f - childsPlayingStartTime;
             }
 
             // Calling start and loop start events.
@@ -105,9 +101,7 @@ namespace Numba.Tweens
                     currentTime = _currentTime;
                     nextTime = events[i].time;
 
-                    if (_loopType == LoopType.Backward)
-                        (currentTime, nextTime) = (nextTime, currentTime);
-                    else if (_loopType == LoopType.Mirror)
+                    if (_loopType == LoopType.Mirror)
                     {
                         if (currentTime > time)
                             (currentTime, nextTime) = (nextTime, currentTime);
@@ -125,9 +119,7 @@ namespace Numba.Tweens
             currentTime = _currentTime;
             nextTime = events[events.Count - 1].time;
 
-            if (_loopType == LoopType.Backward)
-                (currentTime, nextTime) = (nextTime, currentTime);
-            else if (_loopType == LoopType.Mirror)
+            if (_loopType == LoopType.Mirror)
             {
                 if (currentTime > time)
                     (currentTime, nextTime) = (nextTime, currentTime);
@@ -160,10 +152,6 @@ namespace Numba.Tweens
                 // If we move forward, then current time for childs must be 0 when started,
                 // otherwise (when go in backward direction) it must be 1.
                 childsPlayingStartTime = _currentTime < time ? 0f : 1f;
-
-                // When we use backward loop type, start time for childs must be reversed (even in difficult hierarchy).
-                if (_loopType == LoopType.Backward)
-                    childsPlayingStartTime = 1f - childsPlayingStartTime;
             }
 
             // Calling start and loop start events.
@@ -462,8 +450,6 @@ namespace Numba.Tweens
         {
             if (_loopType == LoopType.Mirror)
                 time = 0f;
-            else if (_loopType == LoopType.Backward)
-                time = 1f - time;
 
             for (int i = 0; i < _playables.Count; i++)
                 _playables[i].playable.ResetStateAccordingToTime(time);
