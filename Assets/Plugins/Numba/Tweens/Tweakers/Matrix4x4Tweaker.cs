@@ -7,10 +7,8 @@ using System;
 
 namespace Numba.Tweens.Tweakers
 {
-    public class Matrix4x4Tweaker : Tweaker<Matrix4x4>
+    public class Matrix4x4Tweaker : Tweak<Matrix4x4>
     {
-        public Matrix4x4Tweaker(Func<Matrix4x4> from, Func<Matrix4x4> to, Action<Matrix4x4> action) : base(from, to, action) { }
-
-        public override Matrix4x4 Evaluate(float value, Formula formula) => formula?.Calculate(From(), To(), value) ?? Formula.Linear.Calculate(From(), To(), value);
+        public override Matrix4x4 Evaluate(Matrix4x4 from, Matrix4x4 to, float value, Formula formula) => formula?.Calculate(from, to, value) ?? Formula.Linear.Calculate(from, to, value);
     }
 }

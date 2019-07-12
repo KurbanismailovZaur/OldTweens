@@ -323,6 +323,7 @@ namespace Numba.Tweens
             switch (loopType)
             {
                 case LoopType.Repeat:
+                case LoopType.Increment:
                     return time;
                 case LoopType.Mirror:
                     return time <= 0.5f ? time * 2f : (1f - time) * 2f;

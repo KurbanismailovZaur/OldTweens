@@ -7,10 +7,8 @@ using System;
 
 namespace Numba.Tweens.Tweakers
 {
-    public class QuaternionTweaker : Tweaker<Quaternion>
+    public class QuaternionTweaker : Tweak<Quaternion>
     {
-        public QuaternionTweaker(Func<Quaternion> from, Func<Quaternion> to, Action<Quaternion> action) : base(from, to, action) { }
-
-        public override Quaternion Evaluate(float value, Formula formula) => formula?.Calculate(From(), To(), value) ?? Formula.Linear.Calculate(From(), To(), value);
+        public override Quaternion Evaluate(Quaternion from, Quaternion to, float value, Formula formula) => formula?.Calculate(from, to, value) ?? Formula.Linear.Calculate(from, to, value);
     }
 }

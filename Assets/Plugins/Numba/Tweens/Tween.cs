@@ -1,11 +1,10 @@
 ﻿using UnityEngine;
+using System;
 
 namespace Numba.Tweens
 {
-    public sealed class Tween : Playable
+    public abstract class Tween : Playable
     {
-        public Tweaker Tweaker { get; set; }
-
         public Formula Formula { get; set; }
 
         public new float Duration
@@ -20,12 +19,39 @@ namespace Numba.Tweens
             }
         }
 
-        public Tween(Tweaker tweaker, float duration, Formula formula = null, int count = 1, LoopType loopType = LoopType.Repeat) : this(null, tweaker, duration, formula, count, loopType) { }
+        public Tween(float duration, Formula formula = null, int count = 1, LoopType loopType = LoopType.Repeat) : this(null, duration, formula, count, loopType) { }
 
-        public Tween(string name, Tweaker tweaker, float duration, Formula formula = null, int count = 1, LoopType loopType = LoopType.Repeat) : base(name, duration, count, loopType)
+        public Tween(string name, float duration, Formula formula = null, int count = 1, LoopType loopType = LoopType.Repeat) : base(name, duration, count, loopType) => Formula = formula;
+
+        public void SetTimeAAAAAAA(float time) => SetTime(time);
+
+        protected internal override void ResetCurrentTime() => _currentTime = 0f;
+
+        public new Tween Play() => (Tween)base.Play();
+
+        public new Tween Pause() => (Tween)base.Pause();
+
+        public new Tween Stop() => (Tween)base.Stop();
+    }
+
+    public sealed class Tween<T> : Tween where T : struct
+    {
+        public Func<T> From { get; set; }
+
+        public Func<T> To { get; set; }
+
+        public Action<T> Setter;
+
+        public Tweak<T> Tweak { get; set; }
+
+        public Tween(Func<T> from, Func<T> to, Action<T> setter, Tweak<T> tweak, float duration, Formula formula = null, int count = 1, LoopType loopType = LoopType.Repeat) : this(null, from, to, setter, tweak, duration, formula, count, loopType) { }
+
+        public Tween(string name, Func<T> from, Func<T> to, Action<T> setter, Tweak<T> tweak, float duration, Formula formula = null, int count = 1, LoopType loopType = LoopType.Repeat) : base(name, duration, formula, count, loopType)
         {
-            Tweaker = tweaker;
-            Formula = formula;
+            From = from;
+            To = to;
+            Setter = setter;
+            Tweak = tweak;
         }
 
         protected internal override void SetTime(float time, bool normalized = false)
@@ -36,8 +62,6 @@ namespace Numba.Tweens
                 SetTimeWhenDurationIsNotZero(time, normalized);
         }
 
-        public void SetTimeAAAAAAA(float time) => SetTime(time);
-
         private void SetTimeWhenDurationIsZero(float time, bool normalized)
         {
             if (!GetEvents(ref time, normalized, out Events events))
@@ -45,17 +69,29 @@ namespace Numba.Tweens
 
             int startIndex = 0;
 
+            var isForward = _currentTime < time;
+
+            var from = default(T);
+            var to = default(T);
+
             // Calling start and loop start events.
             if (events[0].phases[0] == Phase.Started)
             {
+                from = From();
+                to = To();
+
+                if (_loopType == LoopType.Increment)
+                {
+                    var pair = (isForward ? 0 : events.Count - 1) / 2;
+                    (from, to) = (Tweak?.Evaluate(from, to, pair) ?? from, Tweak?.Evaluate(from, to, pair + 1) ?? to);
+                }
+
                 // WrapTime not needed, because _current time will be equal to 0 or 1.
-                Tweaker?.Apply(LoopTime(events[0].time, _loopType), Formula);
+                Tweak?.Apply(from, to, LoopTime(events[0].time, _loopType), Setter, Formula);
                 events[0].CallAll();
 
                 startIndex = 1;
             }
-
-            var normalizedDuration = GetNormalizedDuration();
 
             // Calling events between first (inclusive/exclusive) and last (exclusive).
             for (int i = startIndex; i < events.Count - 1; i++)
@@ -66,7 +102,16 @@ namespace Numba.Tweens
                     // but may be useful when exception was throwed in tweaker.
                     _currentTime = events[i].time;
 
-                    Tweaker?.Apply(LoopTime(events[i].time, _loopType), Formula);
+                    from = From();
+                    to = To();
+
+                    if (_loopType == LoopType.Increment)
+                    {
+                        var pair = (isForward ? i : events.Count - 1 - i) / 2;
+                        (from, to) = (Tweak?.Evaluate(from, to, pair) ?? from, Tweak?.Evaluate(from, to, pair + 1) ?? to);
+                    }
+
+                    Tweak?.Apply(from, to, LoopTime(events[i].time, _loopType), Setter, Formula);
                     events[i].Call(j);
                 }
             }
@@ -74,8 +119,17 @@ namespace Numba.Tweens
             // Save last current time value, again for exceptions in tweaker.
             _currentTime = events[events.Count - 1].time;
 
+            from = From();
+            to = To();
+
+            if (_loopType == LoopType.Increment)
+            {
+                var pair = (isForward ? events.Count - 1 : 0) / 2;
+                (from, to) = (Tweak?.Evaluate(from, to, pair) ?? from, Tweak?.Evaluate(from, to, pair + 1) ?? to);
+            }
+
             // Calling update or complete and loop complete events.
-            Tweaker?.Apply(LoopTime(events[events.Count - 1].time, _loopType), Formula);
+            Tweak?.Apply(from, to, LoopTime(events[events.Count - 1].time, _loopType), Setter, Formula);
             events[events.Count - 1].CallAll();
         }
 
@@ -90,7 +144,7 @@ namespace Numba.Tweens
             if (events[0].phases[0] == Phase.Started)
             {
                 // WrapTime not needed, because _current time will be equal to 0 or 1.
-                Tweaker?.Apply(LoopTime(events[0].time, _loopType), Formula);
+                Tweak?.Apply(From(), To(), LoopTime(events[0].time, _loopType), Setter, Formula);
                 events[0].CallAll();
 
                 startIndex = 1;
@@ -118,7 +172,7 @@ namespace Numba.Tweens
                         // because in backward direction loop complete events must be wraped as zero.
                         wrappedTime = WrapTime(events[i].time, normalizedDuration) - playingStartTime;
 
-                    Tweaker?.Apply(LoopTime(wrappedTime, _loopType), Formula);
+                    Tweak?.Apply(From(), To(), LoopTime(wrappedTime, _loopType), Setter, Formula);
                     events[i].Call(j);
                 }
             }
@@ -134,18 +188,10 @@ namespace Numba.Tweens
                 wrappedTime -= playingStartTime;
 
             // Calling update, loop complete or loop complete + complete events.
-            Tweaker?.Apply(LoopTime(wrappedTime, _loopType), Formula);
+            Tweak?.Apply(From(), To(), LoopTime(wrappedTime, _loopType), Setter, Formula);
             events[events.Count - 1].CallAll();
         }
 
-        protected internal override void ResetCurrentTime() => _currentTime = 0f;
-
-        protected internal override void ResetStateAccordingToTime(float time) => Tweaker?.Apply(LoopTime(time, _loopType), Formula);
-
-        public new Tween Play() => (Tween)base.Play();
-
-        public new Tween Pause() => (Tween)base.Pause();
-
-        public new Tween Stop() => (Tween)base.Stop();
+        protected internal override void ResetStateAccordingToTime(float time) => Tweak?.Apply(From(), To(), LoopTime(time, _loopType), Setter, Formula);
     }
 }

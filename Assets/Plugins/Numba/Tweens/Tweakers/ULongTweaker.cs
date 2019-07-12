@@ -7,10 +7,8 @@ using System;
 
 namespace Numba.Tweens.Tweakers
 {
-    public class ULongTweaker : Tweaker<ulong>
+    public class ULongTweaker : Tweak<ulong>
     {
-        public ULongTweaker(Func<ulong> from, Func<ulong> to, Action<ulong> action) : base(from, to, action) { }
-
-        public override ulong Evaluate(float value, Formula formula) => formula?.Calculate(From(), To(), value) ?? Formula.Linear.Calculate(From(), To(), value);
+        public override ulong Evaluate(ulong from, ulong to, float value, Formula formula) => formula?.Calculate(from, to, value) ?? Formula.Linear.Calculate(from, to, value);
     }
 }

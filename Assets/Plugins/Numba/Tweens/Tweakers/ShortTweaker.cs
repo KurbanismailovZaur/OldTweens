@@ -7,10 +7,8 @@ using System;
 
 namespace Numba.Tweens.Tweakers
 {
-    public class ShortTweaker : Tweaker<short>
+    public class ShortTweaker : Tweak<short>
     {
-        public ShortTweaker(Func<short> from, Func<short> to, Action<short> action) : base(from, to, action) { }
-
-        public override short Evaluate(float value, Formula formula) => formula?.Calculate(From(), To(), value) ?? Formula.Linear.Calculate(From(), To(), value);
+        public override short Evaluate(short from, short to, float value, Formula formula) => formula?.Calculate(from, to, value) ?? Formula.Linear.Calculate(from, to, value);
     }
 }

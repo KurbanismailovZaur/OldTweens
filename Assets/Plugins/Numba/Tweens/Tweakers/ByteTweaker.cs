@@ -7,10 +7,8 @@ using System;
 
 namespace Numba.Tweens.Tweakers
 {
-    public class ByteTweaker : Tweaker<byte>
+    public class ByteTweaker : Tweak<byte>
     {
-        public ByteTweaker(Func<byte> from, Func<byte> to, Action<byte> action) : base(from, to, action) { }
-
-        public override byte Evaluate(float value, Formula formula) => formula?.Calculate(From(), To(), value) ?? Formula.Linear.Calculate(From(), To(), value);
+        public override byte Evaluate(byte from, byte to, float value, Formula formula) => formula?.Calculate(from, to, value) ?? Formula.Linear.Calculate(from, to, value);
     }
 }

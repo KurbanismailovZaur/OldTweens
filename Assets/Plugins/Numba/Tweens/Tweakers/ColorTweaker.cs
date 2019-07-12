@@ -7,10 +7,8 @@ using System;
 
 namespace Numba.Tweens.Tweakers
 {
-    public class ColorTweaker : Tweaker<Color>
+    public class ColorTweaker : Tweak<Color>
     {
-        public ColorTweaker(Func<Color> from, Func<Color> to, Action<Color> action) : base(from, to, action) { }
-
-        public override Color Evaluate(float value, Formula formula) => formula?.Calculate(From(), To(), value) ?? Formula.Linear.Calculate(From(), To(), value);
+        public override Color Evaluate(Color from, Color to, float value, Formula formula) => formula?.Calculate(from, to, value) ?? Formula.Linear.Calculate(from, to, value);
     }
 }
